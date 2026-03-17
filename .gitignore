@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+.DS_Store
+vite.log
+edge-dom*.html
+edge-shot.png
