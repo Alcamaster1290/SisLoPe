@@ -18,7 +18,7 @@ const sampleNodes: LogisticsNode[] = [
   },
   {
     id: "lurin",
-    name: "Lurín",
+    name: "Lurin",
     category: "inland_hub",
     region: "Lima",
     lat: -12.2747,
@@ -28,6 +28,19 @@ const sampleNodes: LogisticsNode[] = [
     terrain: "coast",
     description: "Hub metropolitano",
     tags: ["hub"],
+  },
+  {
+    id: "paita",
+    name: "Paita",
+    category: "port_sea",
+    region: "Piura",
+    lat: -5.0894,
+    lon: -81.1144,
+    strategicLevel: "national",
+    macrozone: "north",
+    terrain: "coast",
+    description: "Puerto maritimo norte",
+    tags: ["mar"],
   },
 ];
 
@@ -47,7 +60,7 @@ describe("geo utilities", () => {
     const featureCollection = nodesToFeatureCollection(sampleNodes);
 
     expect(featureCollection.type).toBe("FeatureCollection");
-    expect(featureCollection.features).toHaveLength(2);
+    expect(featureCollection.features).toHaveLength(3);
     expect(featureCollection.features[0].properties.kind).toBe("node");
   });
 
@@ -73,5 +86,48 @@ describe("geo utilities", () => {
     expect(urbanPreset.pitch).toBe(42);
     expect(widePreset.bearing).toBe(0);
     expect(urbanPreset.padding.right).toBe(urbanPreset.padding.left);
+  });
+
+  it("builds smooth sea corridors without sharp corners", () => {
+    const seaFlows: LogisticsFlow[] = [
+      {
+        id: "paita-callao-sea",
+        from: "paita",
+        to: "callao",
+        mode: "sea",
+        importance: "primary",
+        animated: true,
+      },
+    ];
+    const nodeMap = new Map(sampleNodes.map((node) => [node.id, node]));
+    const seaFeature = flowsToFeatureCollection(seaFlows, nodeMap).features[0];
+    const coordinates = seaFeature.geometry.coordinates;
+    const minimumEndpointLon = Math.min(sampleNodes[0].lon, sampleNodes[2].lon);
+
+    expect(coordinates.length).toBeGreaterThan(40);
+    expect(coordinates[0]).toEqual([sampleNodes[2].lon, sampleNodes[2].lat]);
+    expect(coordinates.at(-1)).toEqual([sampleNodes[0].lon, sampleNodes[0].lat]);
+
+    const interiorPoints = coordinates.slice(1, -1);
+    const mostOffshoreLon = interiorPoints.reduce((minLon, [lon]) => Math.min(minLon, lon), Infinity);
+    expect(mostOffshoreLon).toBeLessThan(minimumEndpointLon - 0.28);
+
+    const maxCornerDegrees = coordinates.slice(1, -1).reduce((maxCorner, current, index) => {
+      const previous = coordinates[index];
+      const next = coordinates[index + 2];
+      const vectorA: [number, number] = [current[0] - previous[0], current[1] - previous[1]];
+      const vectorB: [number, number] = [next[0] - current[0], next[1] - current[1]];
+      const lengthA = Math.hypot(vectorA[0], vectorA[1]);
+      const lengthB = Math.hypot(vectorB[0], vectorB[1]);
+
+      if (lengthA === 0 || lengthB === 0) return maxCorner;
+
+      const cosine = (vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1]) / (lengthA * lengthB);
+      const angleRadians = Math.acos(Math.max(-1, Math.min(1, cosine)));
+      const cornerDegrees = (angleRadians * 180) / Math.PI;
+      return Math.max(maxCorner, cornerDegrees);
+    }, 0);
+
+    expect(maxCornerDegrees).toBeLessThan(14);
   });
 });

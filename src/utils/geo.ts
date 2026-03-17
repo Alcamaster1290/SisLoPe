@@ -124,6 +124,36 @@ function lerp(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
 
+function sampleCubicBezier(
+  start: Position,
+  control1: Position,
+  control2: Position,
+  end: Position,
+  segments = 72,
+): Position[] {
+  const safeSegments = Math.max(16, segments);
+  const coordinates: Position[] = [];
+
+  for (let index = 0; index <= safeSegments; index += 1) {
+    const t = index / safeSegments;
+    const mt = 1 - t;
+    const x =
+      mt ** 3 * start[0] +
+      3 * mt ** 2 * t * control1[0] +
+      3 * mt * t ** 2 * control2[0] +
+      t ** 3 * end[0];
+    const y =
+      mt ** 3 * start[1] +
+      3 * mt ** 2 * t * control1[1] +
+      3 * mt * t ** 2 * control2[1] +
+      t ** 3 * end[1];
+
+    coordinates.push([x, y]);
+  }
+
+  return coordinates;
+}
+
 function getControlPoint(start: Position, end: Position, curvature: number): Position {
   const midLon = (start[0] + end[0]) / 2;
   const midLat = (start[1] + end[1]) / 2;
@@ -141,36 +171,34 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
   const latDelta = end[1] - start[1];
   const latSpan = Math.abs(latDelta);
   const lonSpan = Math.abs(end[0] - start[0]);
-  const offshoreShift = clamp(0.72 + latSpan * 0.18 + lonSpan * 0.42, 0.72, 1.9);
-  const seaLimitLon = Math.min(start[0], end[0]) - offshoreShift;
-  const minBoundLon = PERU_BOUNDS[0][0] + 0.25;
-  const seaOuterLon = clamp(seaLimitLon, minBoundLon, Math.min(start[0], end[0]) - 0.36);
+  const offshoreShift = clamp(0.68 + latSpan * 0.1 + lonSpan * 0.24, 0.62, 2.2);
+  const minBoundLon = PERU_BOUNDS[0][0] + 0.34;
+  const seaOuterLon = clamp(
+    Math.min(start[0], end[0]) - offshoreShift,
+    minBoundLon,
+    Math.min(start[0], end[0]) - 0.3,
+  );
   const direction = latDelta >= 0 ? 1 : -1;
-  const lateralBias = clamp(latSpan * 0.08, 0.06, 0.24) * direction;
-  const control1: Position = [seaOuterLon, lerp(start[1], end[1], 0.28) + lateralBias];
-  const control2: Position = [seaOuterLon, lerp(start[1], end[1], 0.72) - lateralBias];
-  const guidePoints: Position[] = [start, control1, control2, end];
+  const lateralBias = clamp(latSpan * 0.06, 0.02, 0.16) * direction;
+  const control1: Position = [
+    lerp(start[0], seaOuterLon, 0.72),
+    start[1] + latDelta * 0.33 + lateralBias,
+  ];
+  const control2: Position = [
+    lerp(end[0], seaOuterLon, 0.72),
+    start[1] + latDelta * 0.67 - lateralBias,
+  ];
 
-  const smoothLine = bezierSpline(lineString(guidePoints), {
-    resolution: 16000,
-    sharpness: 0.62,
-  });
+  const coordinates = sampleCubicBezier(start, control1, control2, end, 96);
 
-  if (smoothLine.geometry.type !== "LineString") {
-    return guidePoints;
-  }
+  return coordinates.map((coordinate, index) => {
+    if (index === 0 || index === coordinates.length - 1) {
+      return coordinate;
+    }
 
-  const smoothed = smoothLine.geometry.coordinates as Position[];
-  if (smoothed.length <= 2) {
-    return guidePoints;
-  }
-
-  // Preserve exact endpoints and keep the rest smooth and offshore.
-  smoothed[0] = start;
-  smoothed[smoothed.length - 1] = end;
-  return smoothed.map((position, index) => {
-    if (index === 0 || index === smoothed.length - 1) return position;
-    return [Math.min(position[0], Math.min(start[0], end[0]) - 0.22), position[1]];
+    const t = index / (coordinates.length - 1);
+    const smoothOffshorePush = Math.sin(Math.PI * t) * clamp(offshoreShift * 0.14, 0.04, 0.3);
+    return [coordinate[0] - smoothOffshorePush, coordinate[1]];
   });
 }
 
