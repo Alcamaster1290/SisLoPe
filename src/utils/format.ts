@@ -9,9 +9,8 @@ import {
 import type { FlowMode, Macrozone, StrategicLevel, Terrain } from "@/types/logistics";
 
 export function formatCoordinate(value: number, axis: "lat" | "lon"): string {
-  const suffix =
-    axis === "lat" ? (value >= 0 ? "N" : "S") : value >= 0 ? "E" : "O";
-  return `${Math.abs(value).toFixed(4)}° ${suffix}`;
+  const suffix = axis === "lat" ? (value >= 0 ? "N" : "S") : value >= 0 ? "E" : "O";
+  return `${Math.abs(value).toFixed(4)} deg ${suffix}`;
 }
 
 export function formatLocation(node: LogisticsNode): string {
@@ -31,7 +30,7 @@ export function formatMacrozone(macrozone: Macrozone): string {
 }
 
 export function formatTerrain(terrain?: Terrain): string {
-  return terrain ? TERRAIN_META[terrain] : "Sin clasificación";
+  return terrain ? TERRAIN_META[terrain] : "Sin clasificacion";
 }
 
 export function formatFlowMode(mode: FlowMode): string {

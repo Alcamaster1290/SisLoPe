@@ -38,6 +38,7 @@ export function App() {
   const toggleMapExpanded = useMapStore((state) => state.toggleMapExpanded);
   const setCategoryFilters = useMapStore((state) => state.setCategoryFilters);
   const clearCategoryFilters = useMapStore((state) => state.clearCategoryFilters);
+  const resetFilters = useMapStore((state) => state.resetFilters);
   const selectNode = useMapStore((state) => state.selectNode);
   const setDepartment = useMapStore((state) => state.setDepartment);
   const requestCameraCommand = useMapStore((state) => state.requestCameraCommand);
@@ -73,6 +74,22 @@ export function App() {
 
   const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) ?? null : null;
   const allCategories = useMemo(() => Object.keys(CATEGORY_META) as NodeCategory[], []);
+  const categoryTotals = useMemo(() => {
+    const totals = allCategories.reduce<Record<NodeCategory, number>>((accumulator, category) => {
+      accumulator[category] = 0;
+      return accumulator;
+    }, {} as Record<NodeCategory, number>);
+
+    for (const node of nodes) {
+      totals[node.category] += 1;
+    }
+
+    return totals;
+  }, [allCategories, nodes]);
+  const availableCategories = useMemo(
+    () => allCategories.filter((category) => categoryTotals[category] > 0),
+    [allCategories, categoryTotals],
+  );
 
   const connectedNodes = useMemo<LogisticsNode[]>(() => {
     if (!selectedNode?.connections) return [];
@@ -211,30 +228,64 @@ export function App() {
     resetCamera();
   };
 
+  useEffect(() => {
+    if (activeCategories.length === 0) return;
+
+    const validCategories = activeCategories.filter((category) =>
+      availableCategories.includes(category),
+    );
+    if (validCategories.length === activeCategories.length) return;
+    setCategoryFilters(validCategories);
+  }, [activeCategories, availableCategories, setCategoryFilters]);
+
   const handleLegendToggleCategory = useCallback(
     (category: NodeCategory) => {
+      if (!availableCategories.includes(category)) return;
+
       if (activeCategories.length === 0) {
-        setCategoryFilters(allCategories.filter((entry) => entry !== category));
+        setCategoryFilters([category]);
         return;
       }
 
       if (activeCategories.includes(category)) {
         const next = activeCategories.filter((entry) => entry !== category);
-        setCategoryFilters(next.length === 0 ? [] : next);
+        setCategoryFilters(next);
         return;
       }
 
-      const next = [...activeCategories, category];
-      const uniqueNext = [...new Set(next)];
-      if (uniqueNext.length >= allCategories.length) {
+      const next = [...new Set([...activeCategories, category])].filter((entry) =>
+        availableCategories.includes(entry),
+      );
+      if (next.length >= availableCategories.length) {
         clearCategoryFilters();
         return;
       }
 
-      setCategoryFilters(uniqueNext);
+      setCategoryFilters(next);
     },
-    [activeCategories, allCategories, clearCategoryFilters, setCategoryFilters],
+    [activeCategories, availableCategories, clearCategoryFilters, setCategoryFilters],
   );
+
+  const resetFiltersAndView = useCallback(() => {
+    resetFilters();
+    selectNode(null, "system");
+    clearCameraBeforeNodeFocus();
+    requestCameraCommand(
+      {
+        kind: "reset",
+        duration: 1400,
+        padding: getCameraPadding(isMapExpanded),
+      },
+      "user",
+    );
+  }, [
+    clearCameraBeforeNodeFocus,
+    getCameraPadding,
+    isMapExpanded,
+    requestCameraCommand,
+    resetFilters,
+    selectNode,
+  ]);
 
   const handleToggleMapExpanded = useCallback(() => {
     const nextExpanded = !isMapExpanded;
@@ -269,7 +320,7 @@ export function App() {
         exportPending={exportPending}
         presentation={presentation}
         onViewModeChange={setViewMode}
-        onToggleThemeDepth={() => setThemeDepth(themeDepth === "dark" ? "deep-dark" : "dark")}
+        onToggleThemeDepth={() => setThemeDepth(themeDepth === "light" ? "dark" : "light")}
         onToggleLabels={toggleLabels}
         onToggleFlows={toggleFlows}
         onToggleCorridors={toggleCorridors}
@@ -294,8 +345,12 @@ export function App() {
           totalCount={nodes.length}
           departmentCounts={departmentCounts}
           searchMatches={searchMatches}
+          availableCategories={availableCategories}
+          categoryTotals={categoryTotals}
           onFocusNode={focusNode}
           onFocusDepartment={focusDepartment}
+          onToggleCategory={handleLegendToggleCategory}
+          onResetAllFilters={resetFiltersAndView}
         />
 
         <section className="order-1 h-[68vh] min-h-[32rem] overflow-hidden rounded-[30px] lg:order-2 lg:h-full lg:min-h-0">
@@ -310,6 +365,8 @@ export function App() {
             <div className="absolute bottom-4 left-4 z-20">
               <MapLegend
                 visibleNodes={filteredNodes}
+                availableCategories={availableCategories}
+                categoryTotals={categoryTotals}
                 activeCategories={activeCategories}
                 onToggleCategory={handleLegendToggleCategory}
                 onClearCategories={clearCategoryFilters}

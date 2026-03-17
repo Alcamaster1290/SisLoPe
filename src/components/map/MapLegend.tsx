@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { LogisticsNode, NodeCategory } from "@/types/logistics";
 import { CATEGORY_META, FLOW_MODE_META } from "@/utils/colorScale";
 
 interface MapLegendProps {
   visibleNodes: LogisticsNode[];
+  availableCategories: NodeCategory[];
+  categoryTotals: Record<NodeCategory, number>;
   activeCategories: NodeCategory[];
   onToggleCategory: (category: NodeCategory) => void;
   onClearCategories: () => void;
@@ -11,33 +13,47 @@ interface MapLegendProps {
 
 export function MapLegend({
   visibleNodes,
+  availableCategories,
+  categoryTotals,
   activeCategories,
   onToggleCategory,
   onClearCategories,
 }: MapLegendProps) {
   const [minimized, setMinimized] = useState(false);
   const hasCategoryFilter = activeCategories.length > 0;
-  const counts = visibleNodes.reduce<Record<NodeCategory, number>>(
-    (accumulator, node) => {
-      accumulator[node.category] += 1;
-      return accumulator;
-    },
-    {
-      port_sea: 0,
-      port_river: 0,
-      airport: 0,
-      border: 0,
-      freezone: 0,
-      inland_hub: 0,
-      corridor_anchor: 0,
-    },
+  const visibleCounts = useMemo(
+    () =>
+      visibleNodes.reduce<Record<NodeCategory, number>>(
+        (accumulator, node) => {
+          accumulator[node.category] += 1;
+          return accumulator;
+        },
+        {
+          port_sea: 0,
+          port_river: 0,
+          airport: 0,
+          border: 0,
+          freezone: 0,
+          inland_hub: 0,
+          corridor_anchor: 0,
+        },
+      ),
+    [visibleNodes],
+  );
+
+  const categoriesToRender = useMemo(
+    () =>
+      availableCategories.filter(
+        (category) => categoryTotals[category] > 0 || activeCategories.includes(category),
+      ),
+    [activeCategories, availableCategories, categoryTotals],
   );
 
   return (
     <div className="panel-shell pointer-events-auto max-w-[19rem] rounded-[24px] px-4 py-4 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between gap-3">
         <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.26em] text-[var(--text-soft)]">
-          Leyenda operacional
+          Leyenda operativa
         </div>
         <div className="flex items-center gap-1.5">
           <button
@@ -57,43 +73,43 @@ export function MapLegend({
           </button>
         </div>
       </div>
+
       {minimized ? (
-        <div className="mt-3 rounded-xl border border-[var(--surface-border)] bg-black/15 px-3 py-2 text-xs text-[var(--text-soft)]">
+        <div className="mt-3 rounded-xl border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2 text-xs text-[var(--text-soft)]">
           {visibleNodes.length} nodos visibles
         </div>
       ) : (
         <>
           <div className="mt-4 space-y-2">
-            {(Object.entries(CATEGORY_META) as Array<[NodeCategory, (typeof CATEGORY_META)[NodeCategory]]>).map(
-              ([category, meta]) => {
-                const active = !hasCategoryFilter || activeCategories.includes(category);
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => onToggleCategory(category)}
-                    data-active={active}
-                    className="control-pill flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: meta.color }} />
-                      <span className="text-sm text-[var(--text-main)]">{meta.label}</span>
-                    </div>
-                    <span className="font-['Rajdhani'] text-lg font-semibold text-[var(--text-strong)]">
-                      {counts[category]}
-                    </span>
-                  </button>
-                );
-              },
-            )}
+            {categoriesToRender.map((category) => {
+              const meta = CATEGORY_META[category];
+              const active = !hasCategoryFilter || activeCategories.includes(category);
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => onToggleCategory(category)}
+                  data-active={active}
+                  className="control-pill flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: meta.color }} />
+                    <span className="text-sm text-[var(--text-main)]">{meta.label}</span>
+                  </div>
+                  <span className="font-['Rajdhani'] text-lg font-semibold text-[var(--text-strong)]">
+                    {visibleCounts[category]}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-4 border-t border-[var(--surface-border)] pt-4">
             <p className="mb-2 text-[11px] text-[var(--text-soft)]">
-              Sin seleccion activa: todas las categorias visibles.
+              Sin seleccion activa se muestran todas las categorias disponibles.
             </p>
             <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-              Estilo de corredores
+              Tipos de corredor
             </div>
             <div className="mt-3 space-y-2">
               {(["land", "sea", "river", "air"] as const).map((mode) => (

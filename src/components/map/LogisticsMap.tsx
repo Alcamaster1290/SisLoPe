@@ -376,6 +376,7 @@ export function LogisticsMap({
   const showLabels = useMapStore((state) => state.showLabels);
   const showFlows = useMapStore((state) => state.showFlows);
   const showCorridors = useMapStore((state) => state.showCorridors);
+  const themeDepth = useMapStore((state) => state.themeDepth);
   const focusedDepartment = useMapStore((state) => state.selectedDepartment);
   const hoveredDepartment = useMapStore((state) => state.hoveredDepartment);
   const cameraCommand = useMapStore((state) => state.cameraCommand);
@@ -1172,7 +1173,7 @@ export function LogisticsMap({
   }, []);
 
   return (
-    <div className="relative h-full min-h-0 w-full">
+    <div className={`relative h-full min-h-0 w-full ${themeDepth === "light" ? "map-theme-light" : ""}`}>
       <div ref={mapContainerRef} className="absolute inset-0" />
       <DeckCanvasOverlay
         syncState={syncState}
@@ -1181,7 +1182,7 @@ export function LogisticsMap({
         onReady={handleDeckReady}
       />
       <div className={atmosphereClass} />
-      <div className="pointer-events-none absolute left-5 top-5 z-20 max-w-[18rem] rounded-[22px] border border-white/10 bg-[rgba(6,14,24,0.72)] px-4 py-3 shadow-[0_18px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute left-5 top-5 z-20 max-w-[18rem] rounded-[22px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-xl">
         <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.34em] text-[var(--text-soft)]">
           Base geoespacial
         </div>
@@ -1189,13 +1190,13 @@ export function LogisticsMap({
           Peru logistico operativo
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">
-          Silueta nacional, nodos georreferenciados y controles de navegacion visibles aun si las capas avanzadas se degradan.
+          Silueta nacional, nodos georreferenciados y controles de navegacion visibles incluso si las capas avanzadas se degradan.
         </p>
       </div>
       {effectiveViewMode === "emphasis3d" ? (
-        <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[rgba(159,186,208,0.28)] bg-[rgba(7,16,26,0.78)] px-4 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.28)] backdrop-blur-lg">
+        <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-lg">
           <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">
-            Modo 3D emphasis
+            Modo enfasis 3D
           </div>
           <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">
             Esta vista prioriza transicion de camara, halo tactico y jerarquia de nodos. El enfasis 3D se interpreta como relieve operacional, no como pines flotantes.

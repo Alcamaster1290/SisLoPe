@@ -79,7 +79,7 @@ function createPinRenderable(
   const hash = hashNodeId(node.id);
   const strategicScale =
     node.strategicLevel === "national" ? 1.2 : node.strategicLevel === "regional" ? 1.08 : 0.96;
-  const baseOpacity = themeDepth === "deep-dark" ? 0.18 : 0.26;
+  const baseOpacity = themeDepth === "dark" ? 0.18 : 0.24;
 
   const aura = new THREE.Mesh(
     new THREE.CircleGeometry(2.4, 46),
@@ -437,7 +437,8 @@ export function ThreeNodeOverlay({
     };
   }, [active, map, syncState]);
 
-  const labelBackground = themeDepth === "deep-dark" ? "rgba(4,10,16,0.85)" : "rgba(6,14,24,0.78)";
+  const labelBackground =
+    themeDepth === "dark" ? "rgba(8,13,20,0.86)" : "rgba(255,248,246,0.88)";
 
   return (
     <>

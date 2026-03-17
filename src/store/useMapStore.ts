@@ -122,7 +122,7 @@ export function createInitialMapState(): Pick<
     selectedDepartment: null,
     hoveredDepartment: null,
     viewMode: "standard",
-    themeDepth: "dark",
+    themeDepth: "light",
     mapStatus: "loading",
     renderHealth: { ...initialRenderHealth },
     showLabels: true,

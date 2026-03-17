@@ -29,9 +29,9 @@ interface TopBarProps {
 
 const viewModes: Array<{ id: MapViewMode; label: string }> = [
   { id: "standard", label: "2D" },
-  { id: "emphasis3d", label: "3D emphasis" },
-  { id: "flows", label: "Flows" },
-  { id: "density", label: "Density" },
+  { id: "emphasis3d", label: "Enfasis 3D" },
+  { id: "flows", label: "Flujos" },
+  { id: "density", label: "Densidad" },
 ];
 
 function ControlButton({
@@ -94,19 +94,19 @@ export function TopBar({
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:gap-6">
             <div className="min-w-0">
               <div className="font-['Rajdhani'] text-[0.72rem] font-semibold uppercase tracking-[0.42em] text-[var(--text-soft)]">
-                SisLoPe / Peru Logistics Command Center
+                SISLOPE / Centro de Comando Logistico del Peru
               </div>
               <h1 className="mt-2 font-['Rajdhani'] text-2xl font-semibold uppercase tracking-[0.12em] text-[var(--text-strong)] lg:text-[2rem]">
                 Sistema logistico y aduanero del Peru
               </h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-soft)]">
-                Mapa operativo para puertos, hubs interiores, flujos intermodales y nodos
-                fronterizos con base preparada para inteligencia logistica.
+                Mapa operativo de puertos, hubs interiores, flujos intermodales y nodos
+                fronterizos, preparado para inteligencia logistica nacional.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <div className="rounded-full border border-[var(--surface-border)] bg-black/20 px-3 py-2">
+              <div className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
                   Nodos visibles
                 </div>
@@ -114,7 +114,7 @@ export function TopBar({
                   {visibleNodeCount}
                 </div>
               </div>
-              <div className="rounded-full border border-[var(--surface-border)] bg-black/20 px-3 py-2">
+              <div className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
                   Flujos activos
                 </div>
@@ -127,7 +127,7 @@ export function TopBar({
 
           <div className="flex flex-col gap-2 xl:items-end">
             <div className="flex flex-wrap gap-2">
-              <div className="rounded-full border border-[var(--surface-border)] bg-black/20 p-1">
+              <div className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-1">
                 <div className="flex flex-wrap gap-1">
                   {viewModes.map((mode) => (
                     <ControlButton
@@ -141,14 +141,14 @@ export function TopBar({
                 </div>
               </div>
 
-              <ControlButton active={themeDepth === "deep-dark"} onClick={onToggleThemeDepth}>
-                Deep dark
+              <ControlButton active={themeDepth === "dark"} onClick={onToggleThemeDepth}>
+                {themeDepth === "dark" ? "Modo claro" : "Modo oscuro"}
               </ControlButton>
               <ControlButton active={showLabels} disabled={viewMode === "density"} onClick={onToggleLabels}>
-                Labels
+                Etiquetas
               </ControlButton>
               <ControlButton active={showFlows} disabled={viewMode === "density"} onClick={onToggleFlows}>
-                Flows
+                Flujos
               </ControlButton>
               <ControlButton
                 active={showCorridors}
@@ -160,9 +160,9 @@ export function TopBar({
               <ControlButton active={isMapExpanded} onClick={onToggleMapExpanded}>
                 {isMapExpanded ? "Restaurar panel" : "Expandir mapa"}
               </ControlButton>
-              <ControlButton onClick={onResetCamera}>Reset camera</ControlButton>
+              <ControlButton onClick={onResetCamera}>Reiniciar camara</ControlButton>
               <ControlButton disabled={exportPending} onClick={onExport}>
-                {exportPending ? "Exportando..." : "Export PNG"}
+                {exportPending ? "Exportando..." : "Exportar PNG"}
               </ControlButton>
             </div>
 

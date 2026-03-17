@@ -23,19 +23,25 @@ interface FiltersPanelProps {
   totalCount: number;
   departmentCounts: Record<DepartmentId, number>;
   searchMatches: LogisticsNode[];
+  availableCategories: NodeCategory[];
+  categoryTotals: Record<NodeCategory, number>;
   onFocusNode: (nodeId: string) => void;
   onFocusDepartment: (department: DepartmentId | null) => void;
+  onToggleCategory: (category: NodeCategory) => void;
+  onResetAllFilters: () => void;
 }
 
 function FilterChip({
   active,
   label,
   accent,
+  count,
   onClick,
 }: {
   active: boolean;
   label: string;
   accent?: string;
+  count?: number;
   onClick: () => void;
 }) {
   return (
@@ -49,6 +55,11 @@ function FilterChip({
         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accent }} />
       ) : null}
       <span>{label}</span>
+      {typeof count === "number" ? (
+        <span className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-1.5 py-0.5 text-[10px] text-[var(--text-soft)]">
+          {count}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -58,15 +69,17 @@ export function FiltersPanel({
   totalCount,
   departmentCounts,
   searchMatches,
+  availableCategories,
+  categoryTotals,
   onFocusNode,
   onFocusDepartment,
+  onToggleCategory,
+  onResetAllFilters,
 }: FiltersPanelProps) {
   const filters = useMapStore((state) => state.filters);
   const selectedDepartment = useMapStore((state) => state.selectedDepartment);
   const setSearch = useMapStore((state) => state.setSearch);
-  const toggleCategory = useMapStore((state) => state.toggleCategory);
   const toggleFilterValue = useMapStore((state) => state.toggleFilterValue);
-  const resetFilters = useMapStore((state) => state.resetFilters);
 
   const hasActiveFilters =
     filters.categories.length > 0 ||
@@ -104,13 +117,13 @@ export function FiltersPanel({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
-              Exploración
+              Exploracion
             </div>
             <h2 className="mt-2 font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
-              Filtros y búsqueda
+              Filtros y busqueda
             </h2>
           </div>
-          <div className="rounded-full border border-[var(--surface-border)] bg-black/20 px-3 py-2 text-right">
+          <div className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2 text-right">
             <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
               Cobertura
             </div>
@@ -126,7 +139,7 @@ export function FiltersPanel({
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
             Buscar nodo
           </div>
-          <div className="rounded-[22px] border border-[var(--surface-border)] bg-black/20 p-2">
+          <div className="rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-2">
             <input
               type="text"
               value={filters.search}
@@ -144,14 +157,14 @@ export function FiltersPanel({
                   key={node.id}
                   type="button"
                   onClick={() => onFocusNode(node.id)}
-                  className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-black/15 px-3 py-2 text-left transition hover:border-[var(--surface-border-strong)] hover:bg-black/25"
+                  className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2 text-left transition hover:border-[var(--surface-border-strong)]"
                 >
                   <div>
                     <div className="text-sm font-semibold text-[var(--text-strong)]">{node.name}</div>
                     <div className="text-xs text-[var(--text-soft)]">{node.region}</div>
                   </div>
                   <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                    Focus
+                    Ir
                   </span>
                 </button>
               ))}
@@ -171,7 +184,7 @@ export function FiltersPanel({
                 onClick={() => onDepartmentChange(null)}
                 className="control-pill rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em]"
               >
-                Todo Perú
+                Todo Peru
               </button>
 
               {PERU_DEPARTMENTS.map((department) => (
@@ -183,7 +196,7 @@ export function FiltersPanel({
                   className="control-pill inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold tracking-[0.08em]"
                 >
                   <span>{department.label}</span>
-                  <span className="rounded-full border border-white/10 bg-black/20 px-1.5 py-0.5 text-[10px] text-[var(--text-soft)]">
+                  <span className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-1.5 py-0.5 text-[10px] text-[var(--text-soft)]">
                     {departmentCounts[department.id]}
                   </span>
                 </button>
@@ -191,7 +204,8 @@ export function FiltersPanel({
             </div>
           </div>
           <p className="text-[11px] leading-5 text-[var(--text-soft)]">
-            Al elegir un departamento, la cámara entra al área y se priorizan etiquetas de puertos para reducir ruido visual.
+            Al elegir un departamento, la camara entra al area y prioriza etiquetas portuarias para
+            reducir ruido visual.
           </p>
         </section>
 
@@ -203,28 +217,27 @@ export function FiltersPanel({
             {hasActiveFilters ? (
               <button
                 type="button"
-                onClick={() => {
-                  resetFilters();
-                  onFocusDepartment(null);
-                }}
+                onClick={onResetAllFilters}
                 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)] transition hover:text-[var(--text-strong)]"
               >
-                Limpiar
+                Restablecer
               </button>
             ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
-            {(Object.entries(CATEGORY_META) as Array<[NodeCategory, (typeof CATEGORY_META)[NodeCategory]]>).map(
-              ([category, meta]) => (
+            {availableCategories.map((category) => {
+              const meta = CATEGORY_META[category];
+              return (
                 <FilterChip
                   key={category}
                   active={filters.categories.includes(category)}
                   label={meta.label}
                   accent={meta.color}
-                  onClick={() => toggleCategory(category)}
+                  count={categoryTotals[category]}
+                  onClick={() => onToggleCategory(category)}
                 />
-              ),
-            )}
+              );
+            })}
           </div>
         </section>
 
@@ -246,7 +259,7 @@ export function FiltersPanel({
 
         <section className="space-y-3">
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-            Nivel estratégico
+            Nivel estrategico
           </div>
           <div className="flex flex-wrap gap-2">
             {(Object.entries(STRATEGIC_LEVEL_META) as Array<[StrategicLevel, string]>).map(

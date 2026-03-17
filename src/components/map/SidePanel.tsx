@@ -20,19 +20,19 @@ interface SidePanelProps {
 function getOperationalRole(node: LogisticsNode): string {
   switch (node.category) {
     case "port_sea":
-      return "Interfaz marítima principal para comercio exterior, graneles y distribución portuaria.";
+      return "Interfaz maritima principal para comercio exterior, graneles y distribucion portuaria.";
     case "port_river":
-      return "Interfaz fluvial para abastecimiento amazónico, enlace intermodal y consolidación regional.";
+      return "Interfaz fluvial para abastecimiento amazonico, enlace intermodal y consolidacion regional.";
     case "airport":
-      return "Soporte a carga aérea, importación urgente y conexión multimodal con nodos terrestres.";
+      return "Soporte a carga aerea, importacion urgente y conexion multimodal con nodos terrestres.";
     case "border":
-      return "Control aduanero, tránsito internacional y articulación de corredores binacionales.";
+      return "Control aduanero, transito internacional y articulacion de corredores binacionales.";
     case "freezone":
-      return "Plataforma de régimen especial orientada a almacenamiento, transformación y facilitación comercial.";
+      return "Plataforma de regimen especial orientada a almacenamiento, transformacion y facilitacion comercial.";
     case "inland_hub":
-      return "Centro de consolidación interior con función de distribución, almacenamiento y transferencia modal.";
+      return "Centro de consolidacion interior con funcion de distribucion, almacenamiento y transferencia modal.";
     case "corridor_anchor":
-      return "Punto de anclaje para corredores estratégicos y visualización de cadenas logísticas.";
+      return "Punto de anclaje para corredores estrategicos y visualizacion de cadenas logisticas.";
   }
 }
 
@@ -59,17 +59,17 @@ export default function SidePanel({
               Selecciona un nodo
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-main)]">
-              Haz click sobre un nodo o usa la búsqueda para fijar el panel. El doble click hace
-              zoom operativo y el modo demo recorre los puntos críticos del sistema.
+              Haz clic sobre un nodo o usa la busqueda para fijar el panel. El doble clic acerca la
+              vista operativa y el modo demo recorre los puntos criticos del sistema.
             </p>
           </div>
 
-          <div className="grid gap-3 rounded-[22px] border border-[var(--surface-border)] bg-black/15 p-4">
+          <div className="grid gap-3 rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
               Campos previstos
             </div>
             <div className="text-sm text-[var(--text-main)]">
-              Nombre completo, categoría, ubicación, función logística, conexiones, tags y códigos
+              Nombre completo, categoria, ubicacion, funcion logistica, conexiones, tags y codigos
               operativos.
             </div>
           </div>
@@ -122,9 +122,9 @@ export default function SidePanel({
           </div>
 
           <div className="mt-5 space-y-5">
-            <section className="rounded-[24px] border border-[var(--surface-border)] bg-black/15 p-4">
+            <section className="rounded-[24px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                Ubicación
+                Ubicacion
               </div>
               <div className="mt-2 text-sm leading-6 text-[var(--text-strong)]">{formatLocation(node)}</div>
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-[var(--text-main)]">
@@ -149,26 +149,26 @@ export default function SidePanel({
 
             <section className="space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                Descripción logística
+                Descripcion logistica
               </div>
               <p className="text-sm leading-7 text-[var(--text-main)]">{node.description}</p>
             </section>
 
             <section className="space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                Función aduanera / logística
+                Funcion aduanera / logistica
               </div>
               <p className="text-sm leading-7 text-[var(--text-main)]">{getOperationalRole(node)}</p>
             </section>
 
-            <section className="rounded-[24px] border border-[var(--surface-border)] bg-black/15 p-4">
+            <section className="rounded-[24px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
               <div className="grid gap-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[var(--text-soft)]">Código operativo</span>
+                  <span className="text-[var(--text-soft)]">Codigo operativo</span>
                   <span className="font-semibold text-[var(--text-strong)]">{node.code ?? "No disponible"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[var(--text-soft)]">Región</span>
+                  <span className="text-[var(--text-soft)]">Region</span>
                   <span className="font-semibold text-[var(--text-strong)]">{node.region}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -186,7 +186,7 @@ export default function SidePanel({
                 {node.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-[var(--surface-border)] bg-black/15 px-3 py-2 text-xs font-semibold text-[var(--text-main)]"
+                    className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2 text-xs font-semibold text-[var(--text-main)]"
                   >
                     {tag}
                   </span>
@@ -205,14 +205,14 @@ export default function SidePanel({
                       key={connection.id}
                       type="button"
                       onClick={() => onFocusNode(connection.id)}
-                      className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-black/15 px-3 py-3 text-left transition hover:border-[var(--surface-border-strong)] hover:bg-black/25"
+                      className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-3 text-left transition hover:border-[var(--surface-border-strong)]"
                     >
                       <div>
                         <div className="font-semibold text-[var(--text-strong)]">{connection.name}</div>
                         <div className="text-xs text-[var(--text-soft)]">{formatCategory(connection.category)}</div>
                       </div>
                       <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                        Focus
+                        Ir
                       </span>
                     </button>
                   ))

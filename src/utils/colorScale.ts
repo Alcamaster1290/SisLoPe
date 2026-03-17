@@ -60,7 +60,7 @@ export const CATEGORY_META: Record<
   },
   airport: {
     label: "Aeropuerto",
-    shortLabel: "Air",
+    shortLabel: "Aereo",
     color: categoryScale("airport"),
     icon: "AE",
   },
@@ -167,4 +167,3 @@ export function getFlowDashArray(mode: FlowMode): [number, number] {
 export function getNodeWeight(node: Pick<LogisticsNode, "strategicLevel">): number {
   return strategicWeightScale(strategicIndex[node.strategicLevel]);
 }
-

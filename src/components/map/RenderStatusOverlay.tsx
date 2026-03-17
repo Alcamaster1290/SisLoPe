@@ -15,7 +15,7 @@ function getStatusCopy(
     return {
       title: "Mapa no disponible",
       description:
-        "La base cartografica no llego a inicializarse. Reintenta el mapa para reconstruir el pipeline WebGL.",
+        "La base cartografica no termino de inicializar. Reintenta para reconstruir el pipeline WebGL.",
     };
   }
 
@@ -24,7 +24,7 @@ function getStatusCopy(
       return {
         title: "Mapa operativo en modo degradado",
         description:
-          "El enfasis 3D se apago para proteger la estabilidad del mapa. Las capas 2D y los flujos siguen activos.",
+          "El enfasis 3D se desactivo para proteger la estabilidad. Las capas 2D y los flujos siguen activos.",
       };
     }
 
@@ -32,13 +32,13 @@ function getStatusCopy(
       return {
         title: "Mapa base disponible, capas analiticas degradadas",
         description:
-          "Deck.gl no esta renderizando capas analiticas. El basemap y el clustering siguen visibles mientras se recupera la vista.",
+          "Deck.gl no esta renderizando capas analiticas. El mapa base y el clustering siguen visibles mientras se recupera la vista.",
       };
     }
   }
 
   return {
-    title: "Inicializando command center",
+    title: "Inicializando centro de comando",
     description:
       "Cargando base cartografica, sincronizando capas y verificando la salud del render geoespacial.",
   };
