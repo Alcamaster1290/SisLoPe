@@ -145,21 +145,48 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
   const offshoreShift = clamp(0.45 + latSpan * 0.14 + lonSpan * 0.12, 0.45, 1.55);
   const seaLimitLon = Math.min(start[0], end[0]) - 0.18;
   const minBoundLon = PERU_BOUNDS[0][0] + 0.25;
-  const points: Position[] = [start];
+  const guidePoints: Position[] = [start];
 
   for (let index = 1; index < segments; index += 1) {
     const t = index / segments;
     const linearLon = lerp(start[0], end[0], t);
     const linearLat = lerp(start[1], end[1], t);
     const bulge = Math.sin(Math.PI * t);
-    const progressiveShift = offshoreShift * (0.38 + bulge * 0.96);
+    const progressiveShift = offshoreShift * (0.34 + bulge * 1.06);
     const candidateLon = linearLon - progressiveShift;
     const seaLon = clamp(Math.min(candidateLon, seaLimitLon), minBoundLon, seaLimitLon);
-    points.push([seaLon, linearLat]);
+    guidePoints.push([seaLon, linearLat]);
   }
 
-  points.push(end);
-  return points;
+  guidePoints.push(end);
+  const smoothLine = bezierSpline(lineString(guidePoints), {
+    resolution: 13000,
+    sharpness: 0.52,
+  });
+
+  if (smoothLine.geometry.type !== "LineString") {
+    return guidePoints;
+  }
+
+  const smoothed = smoothLine.geometry.coordinates as Position[];
+  if (smoothed.length <= 2) {
+    return guidePoints;
+  }
+
+  const stabilized: Position[] = smoothed.map((position, index) => {
+    if (index === 0) return start;
+    if (index === smoothed.length - 1) return end;
+
+    const t = index / (smoothed.length - 1);
+    const linearLon = lerp(start[0], end[0], t);
+    const bulge = Math.sin(Math.PI * t);
+    const progressiveShift = offshoreShift * (0.28 + bulge * 1.02);
+    const offshoreLimit = Math.min(linearLon - progressiveShift * 0.58, seaLimitLon);
+    const lon = clamp(Math.min(position[0], offshoreLimit), minBoundLon, seaLimitLon);
+    return [lon, position[1]];
+  });
+
+  return stabilized;
 }
 
 function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mode: LogisticsFlow["mode"]): Position[] {
