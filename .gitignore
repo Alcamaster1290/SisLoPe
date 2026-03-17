@@ -7,3 +7,5 @@ coverage
 vite.log
 edge-dom*.html
 edge-shot.png
+
+.vercel
