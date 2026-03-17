@@ -29,6 +29,7 @@ interface MapStoreState {
   showLabels: boolean;
   showFlows: boolean;
   showCorridors: boolean;
+  isMapExpanded: boolean;
   hoveredNodeId: string | null;
   selectedNodeId: string | null;
   camera: typeof INITIAL_CAMERA_STATE;
@@ -52,6 +53,7 @@ interface MapStoreState {
   toggleLabels: () => void;
   toggleFlows: () => void;
   toggleCorridors: () => void;
+  toggleMapExpanded: () => void;
   setHoveredNode: (nodeId: string | null) => void;
   selectNode: (nodeId: string | null, origin?: ActionOrigin) => void;
   rememberCameraBeforeNodeFocus: (camera: MapCameraState) => void;
@@ -81,7 +83,7 @@ const initialFilters: NodeFilters = {
 const initialRenderHealth: RenderHealth = {
   maplibre: false,
   deck: false,
-  three: false,
+  three: true,
 };
 
 function pausePresentationOnUserAction(state: MapStoreState): Partial<MapStoreState> {
@@ -104,6 +106,7 @@ export function createInitialMapState(): Pick<
   | "showLabels"
   | "showFlows"
   | "showCorridors"
+  | "isMapExpanded"
   | "mapStatus"
   | "renderHealth"
   | "hoveredNodeId"
@@ -125,6 +128,7 @@ export function createInitialMapState(): Pick<
     showLabels: true,
     showFlows: true,
     showCorridors: true,
+    isMapExpanded: false,
     hoveredNodeId: null,
     selectedNodeId: null,
     camera: INITIAL_CAMERA_STATE,
@@ -240,6 +244,11 @@ export const useMapStore = create<MapStoreState>((set) => ({
   toggleCorridors: () =>
     set((state) => ({
       showCorridors: !state.showCorridors,
+      ...pausePresentationOnUserAction(state),
+    })),
+  toggleMapExpanded: () =>
+    set((state) => ({
+      isMapExpanded: !state.isMapExpanded,
       ...pausePresentationOnUserAction(state),
     })),
   setHoveredNode: (nodeId) => set(() => ({ hoveredNodeId: nodeId })),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getNodeModeProfile, shouldDisplayLabelByZoom } from "@/layers/createNodeLayers";
+import { getEmphasisNodes, getNodeModeProfile, shouldDisplayLabelByZoom } from "@/layers/createNodeLayers";
 import type { LogisticsNode } from "@/types/logistics";
 
 const baseNode: LogisticsNode = {
@@ -44,5 +44,34 @@ describe("label zoom policy", () => {
     expect(flows.nodeAlpha).toBeLessThan(standard.nodeAlpha);
     expect(density.densityElevationScale).toBeGreaterThan(standard.densityElevationScale);
     expect(densityHighZoom.densityRadius).toBeLessThan(standard.densityRadius);
+  });
+
+  it("prioritizes national and regional nodes in emphasis3d", () => {
+    const regionalNode: LogisticsNode = {
+      ...baseNode,
+      id: "regional-hub",
+      category: "inland_hub",
+      strategicLevel: "regional",
+      name: "Hub regional",
+    };
+    const complementaryNode: LogisticsNode = {
+      ...baseNode,
+      id: "local-node",
+      category: "inland_hub",
+      strategicLevel: "complementary",
+      name: "Nodo local",
+    };
+
+    const emphasis = getEmphasisNodes(
+      [baseNode, regionalNode, complementaryNode],
+      null,
+      null,
+      "emphasis3d",
+    );
+
+    const emphasisIds = new Set(emphasis.map((node) => node.id));
+    expect(emphasisIds.has(baseNode.id)).toBe(true);
+    expect(emphasisIds.has(regionalNode.id)).toBe(true);
+    expect(emphasisIds.has(complementaryNode.id)).toBe(false);
   });
 });

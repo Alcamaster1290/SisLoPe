@@ -10,6 +10,7 @@ interface TopBarProps {
   showLabels: boolean;
   showFlows: boolean;
   showCorridors: boolean;
+  isMapExpanded: boolean;
   exportPending: boolean;
   presentation: PresentationState;
   onViewModeChange: (mode: MapViewMode) => void;
@@ -17,6 +18,7 @@ interface TopBarProps {
   onToggleLabels: () => void;
   onToggleFlows: () => void;
   onToggleCorridors: () => void;
+  onToggleMapExpanded: () => void;
   onResetCamera: () => void;
   onExport: () => void;
   onStartPresentation: () => void;
@@ -64,6 +66,7 @@ export function TopBar({
   showLabels,
   showFlows,
   showCorridors,
+  isMapExpanded,
   exportPending,
   presentation,
   onViewModeChange,
@@ -71,6 +74,7 @@ export function TopBar({
   onToggleLabels,
   onToggleFlows,
   onToggleCorridors,
+  onToggleMapExpanded,
   onResetCamera,
   onExport,
   onStartPresentation,
@@ -140,14 +144,21 @@ export function TopBar({
               <ControlButton active={themeDepth === "deep-dark"} onClick={onToggleThemeDepth}>
                 Deep dark
               </ControlButton>
-              <ControlButton active={showLabels} onClick={onToggleLabels}>
+              <ControlButton active={showLabels} disabled={viewMode === "density"} onClick={onToggleLabels}>
                 Labels
               </ControlButton>
-              <ControlButton active={showFlows} onClick={onToggleFlows}>
+              <ControlButton active={showFlows} disabled={viewMode === "density"} onClick={onToggleFlows}>
                 Flows
               </ControlButton>
-              <ControlButton active={showCorridors} onClick={onToggleCorridors}>
+              <ControlButton
+                active={showCorridors}
+                disabled={viewMode === "density"}
+                onClick={onToggleCorridors}
+              >
                 Corredores
+              </ControlButton>
+              <ControlButton active={isMapExpanded} onClick={onToggleMapExpanded}>
+                {isMapExpanded ? "Restaurar panel" : "Expandir mapa"}
               </ControlButton>
               <ControlButton onClick={onResetCamera}>Reset camera</ControlButton>
               <ControlButton disabled={exportPending} onClick={onExport}>

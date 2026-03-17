@@ -8,7 +8,6 @@ import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
-import { ThreeNodeOverlay } from "@/components/map/ThreeNodeOverlay";
 import { createFlowLayers } from "@/layers/createFlowLayers";
 import { createNodeLayers } from "@/layers/createNodeLayers";
 import { getMapStyle } from "@/lib/mapStyle";
@@ -26,6 +25,7 @@ import type {
 } from "@/types/logistics";
 import {
   flowsToFeatureCollection,
+  getModeCameraPreset,
   getNodeFocusCamera,
   getSuggestedPadding,
   INITIAL_CAMERA_STATE,
@@ -328,10 +328,9 @@ function buildSyncState(map: maplibregl.Map): MapRenderSyncState {
   };
 }
 
-function getOperationalStatus(renderHealth: RenderHealth, viewMode: MapViewMode): MapStatus {
+function getOperationalStatus(renderHealth: RenderHealth): MapStatus {
   if (!renderHealth.maplibre) return "failed";
   if (!renderHealth.deck) return "degraded";
-  if (viewMode === "emphasis3d" && !renderHealth.three) return "degraded";
   return "ready";
 }
 
@@ -361,8 +360,7 @@ export function LogisticsMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const deckRef = useRef<Deck<MapView[]> | null>(null);
-  const viewModeRef = useRef(useMapStore.getState().viewMode);
-  const effectiveViewModeRef = useRef(viewModeRef.current);
+  const effectiveViewModeRef = useRef(useMapStore.getState().viewMode);
   const onSelectDepartmentRef = useRef(onSelectDepartment);
   const nodeMapRef = useRef(nodeMap);
   const isDesktopRef = useRef(isDesktop);
@@ -380,7 +378,6 @@ export function LogisticsMap({
   const showCorridors = useMapStore((state) => state.showCorridors);
   const focusedDepartment = useMapStore((state) => state.selectedDepartment);
   const hoveredDepartment = useMapStore((state) => state.hoveredDepartment);
-  const themeDepth = useMapStore((state) => state.themeDepth);
   const cameraCommand = useMapStore((state) => state.cameraCommand);
   const mapStatus = useMapStore((state) => state.mapStatus);
   const renderHealth = useMapStore((state) => state.renderHealth);
@@ -396,7 +393,7 @@ export function LogisticsMap({
   const nodeFeaturesRef = useRef(nodeFeatures);
   const clustersActiveRef = useRef(clustersActive);
   const hoveredNode = tooltip ? nodeMap.get(tooltip.nodeId) ?? null : null;
-  const effectiveViewMode = viewMode === "emphasis3d" && !renderHealth.three ? "standard" : viewMode;
+  const effectiveViewMode = viewMode;
   const mapZoom = syncState?.zoom ?? INITIAL_CAMERA_STATE.zoom;
   const departmentFocused = Boolean(focusedDepartment);
   const selectedDepartmentRef = useRef<DepartmentId | null>(focusedDepartment);
@@ -624,11 +621,14 @@ export function LogisticsMap({
   }, [nodeFeatures]);
 
   useEffect(() => {
-    viewModeRef.current = viewMode;
-  }, [viewMode]);
-
-  useEffect(() => {
     effectiveViewModeRef.current = effectiveViewMode;
+    const map = mapRef.current;
+    if (!map) return;
+
+    const clustersVisible = map.getZoom() < CLUSTER_THRESHOLD && effectiveViewMode !== "density";
+    syncClusterVisibility(map, clustersVisible);
+    syncNodeVisibility(map, !clustersVisible && effectiveViewMode !== "density");
+    setClustersActive(clustersVisible);
   }, [effectiveViewMode]);
 
   useEffect(() => {
@@ -652,6 +652,11 @@ export function LogisticsMap({
   }, [clustersActive]);
 
   useEffect(() => {
+    if (effectiveViewMode === "density" || !showFlows) {
+      setAnimationTime(0);
+      return;
+    }
+
     let frame = 0;
     let previous = 0;
 
@@ -665,7 +670,7 @@ export function LogisticsMap({
 
     frame = window.requestAnimationFrame(loop);
     return () => window.cancelAnimationFrame(frame);
-  }, []);
+  }, [effectiveViewMode, showFlows]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -694,11 +699,12 @@ export function LogisticsMap({
 
     const syncCameraState = () => {
       const sync = buildSyncState(map);
-      const clustersVisible = sync.zoom < CLUSTER_THRESHOLD;
+      const clustersVisible = sync.zoom < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
+      const nodeFallbackVisible = !clustersVisible && effectiveViewModeRef.current !== "density";
 
       setClustersActive(clustersVisible);
       syncClusterVisibility(map, clustersVisible);
-      syncNodeVisibility(map, !clustersVisible);
+      syncNodeVisibility(map, nodeFallbackVisible);
       setSyncState(sync);
       setCamera({
         longitude: sync.longitude,
@@ -739,7 +745,7 @@ export function LogisticsMap({
     const readyTimeout = window.setTimeout(() => {
       if (idleResolved) return;
       const state = useMapStore.getState();
-      setMapStatus(state.renderHealth.maplibre ? getOperationalStatus(state.renderHealth, state.viewMode) : "failed");
+      setMapStatus(state.renderHealth.maplibre ? getOperationalStatus(state.renderHealth) : "failed");
     }, MAP_READY_TIMEOUT_MS);
 
     const handleContextLost = (event: Event) => {
@@ -819,7 +825,7 @@ export function LogisticsMap({
       window.clearTimeout(readyTimeout);
       syncCameraState();
       const state = useMapStore.getState();
-      setMapStatus(getOperationalStatus(state.renderHealth, state.viewMode));
+      setMapStatus(getOperationalStatus(state.renderHealth));
     });
 
     map.on("error", (event) => {
@@ -905,7 +911,7 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
-      const focus = getNodeFocusCamera(node, viewModeRef.current);
+      const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
       map.easeTo({
         center: [node.lon, node.lat],
         zoom: focus.zoom ?? 6.6,
@@ -926,7 +932,7 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
-      const focus = getNodeFocusCamera(node, viewModeRef.current);
+      const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
       map.easeTo({
         center: [node.lon, node.lat],
         zoom: focus.zoom ?? 6.6,
@@ -1000,8 +1006,9 @@ export function LogisticsMap({
 
     source.setData(nodeFeatures as unknown as FeatureCollection);
     nodeSource?.setData(nodeFeatures as unknown as FeatureCollection);
-    syncClusterVisibility(map, map.getZoom() < CLUSTER_THRESHOLD);
-    syncNodeVisibility(map, map.getZoom() >= CLUSTER_THRESHOLD);
+    const clustersVisible = map.getZoom() < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
+    syncClusterVisibility(map, clustersVisible);
+    syncNodeVisibility(map, !clustersVisible && effectiveViewModeRef.current !== "density");
   }, [nodeFeatures]);
 
   useEffect(() => {
@@ -1026,29 +1033,26 @@ export function LogisticsMap({
   useEffect(() => {
     if (mapStatus === "loading") return;
 
-    const nextStatus = getOperationalStatus(renderHealth, viewMode);
+    const nextStatus = getOperationalStatus(renderHealth);
     if (nextStatus !== mapStatus) {
       setMapStatus(nextStatus);
     }
-  }, [mapStatus, renderHealth, setMapStatus, viewMode]);
+  }, [mapStatus, renderHealth, setMapStatus]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    const targetPitch =
-      effectiveViewMode === "emphasis3d"
-        ? 60
-        : effectiveViewMode === "flows"
-          ? 44
-          : effectiveViewMode === "density"
-            ? 18
-            : 24;
+    const modePreset = getModeCameraPreset(effectiveViewMode);
+    const pitchDelta = Math.abs(map.getPitch() - modePreset.pitch);
+    const bearingDelta = Math.abs(map.getBearing() - modePreset.bearing);
 
-    if (Math.abs(map.getPitch() - targetPitch) > 1) {
+    if (pitchDelta > 0.8 || bearingDelta > 0.8) {
       map.easeTo({
-        pitch: targetPitch,
-        duration: 900,
+        pitch: modePreset.pitch,
+        bearing: modePreset.bearing,
+        duration: 1150,
+        easing: (value) => 1 - Math.pow(1 - value, 3),
         essential: true,
       });
     }
@@ -1059,11 +1063,12 @@ export function LogisticsMap({
     if (!map || !cameraCommand) return;
 
     if (cameraCommand.kind === "reset") {
+      const modePreset = getModeCameraPreset(effectiveViewMode);
       map.easeTo({
         center: [INITIAL_CAMERA_STATE.longitude, INITIAL_CAMERA_STATE.latitude],
         zoom: INITIAL_CAMERA_STATE.zoom,
-        pitch: INITIAL_CAMERA_STATE.pitch,
-        bearing: INITIAL_CAMERA_STATE.bearing,
+        pitch: modePreset.pitch,
+        bearing: modePreset.bearing,
         duration: cameraCommand.duration ?? 1600,
         padding: {
           ...getSuggestedPadding(isDesktop),
@@ -1134,24 +1139,7 @@ export function LogisticsMap({
       };
 
       if (state.mapStatus !== "loading") {
-        setMapStatus(getOperationalStatus(nextHealth, state.viewMode));
-      }
-    },
-    [setMapStatus, setRendererHealth],
-  );
-
-  const handleThreeHealthChange = useCallback(
-    (healthy: boolean) => {
-      setRendererHealth("three", healthy);
-
-      const state = useMapStore.getState();
-      const nextHealth = {
-        ...state.renderHealth,
-        three: healthy,
-      };
-
-      if (state.mapStatus !== "loading") {
-        setMapStatus(getOperationalStatus(nextHealth, state.viewMode));
+        setMapStatus(getOperationalStatus(nextHealth));
       }
     },
     [setMapStatus, setRendererHealth],
@@ -1172,11 +1160,12 @@ export function LogisticsMap({
   }, []);
 
   const handleResetView = useCallback(() => {
+    const modePreset = getModeCameraPreset(effectiveViewModeRef.current);
     mapRef.current?.easeTo({
       center: [INITIAL_CAMERA_STATE.longitude, INITIAL_CAMERA_STATE.latitude],
       zoom: INITIAL_CAMERA_STATE.zoom,
-      pitch: INITIAL_CAMERA_STATE.pitch,
-      bearing: INITIAL_CAMERA_STATE.bearing,
+      pitch: modePreset.pitch,
+      bearing: modePreset.bearing,
       duration: 1000,
       essential: true,
     });
@@ -1190,17 +1179,6 @@ export function LogisticsMap({
         layers={deckLayers}
         onHealthChange={handleDeckHealthChange}
         onReady={handleDeckReady}
-      />
-      <ThreeNodeOverlay
-        map={mapRef.current}
-        syncState={syncState}
-        nodes={nodes}
-        hoveredNodeId={hoveredNodeId}
-        selectedNodeId={selectedNodeId}
-        viewMode={effectiveViewMode}
-        themeDepth={themeDepth}
-        active={effectiveViewMode === "emphasis3d"}
-        onHealthChange={handleThreeHealthChange}
       />
       <div className={atmosphereClass} />
       <div className="pointer-events-none absolute left-5 top-5 z-20 max-w-[18rem] rounded-[22px] border border-white/10 bg-[rgba(6,14,24,0.72)] px-4 py-3 shadow-[0_18px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl">
@@ -1220,7 +1198,7 @@ export function LogisticsMap({
             Modo 3D emphasis
           </div>
           <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">
-            Los pines 3D marcan nodos estrategicos. Cada pin incluye etiqueta anclada y linea guia hacia la coordenada real.
+            Esta vista prioriza transicion de camara, halo tactico y jerarquia de nodos. El enfasis 3D se interpreta como relieve operacional, no como pines flotantes.
           </p>
         </div>
       ) : null}

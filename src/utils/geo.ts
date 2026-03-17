@@ -50,6 +50,22 @@ export const PRESENTATION_SEQUENCE = [
   "desaguadero",
 ] as const;
 
+export function getModeCameraPreset(mode: MapViewMode): { pitch: number; bearing: number } {
+  if (mode === "emphasis3d") {
+    return { pitch: 58, bearing: -10 };
+  }
+
+  if (mode === "flows") {
+    return { pitch: 42, bearing: 0 };
+  }
+
+  if (mode === "density") {
+    return { pitch: 26, bearing: 0 };
+  }
+
+  return { pitch: 24, bearing: 0 };
+}
+
 const coordinateOverrides: Partial<Record<string, CoordinateOverride>> = {};
 
 export function resolveNodeCoordinates(
@@ -100,6 +116,14 @@ function getCurvatureForMode(mode: LogisticsFlow["mode"]): number {
   return 0.08;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function lerp(start: number, end: number, t: number): number {
+  return start + (end - start) * t;
+}
+
 function getControlPoint(start: Position, end: Position, curvature: number): Position {
   const midLon = (start[0] + end[0]) / 2;
   const midLat = (start[1] + end[1]) / 2;
@@ -113,11 +137,41 @@ function getControlPoint(start: Position, end: Position, curvature: number): Pos
   return [midLon + (normalLon / magnitude) * offset, midLat + (normalLat / magnitude) * offset];
 }
 
+function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
+  const latDelta = end[1] - start[1];
+  const latSpan = Math.abs(latDelta);
+  const lonSpan = Math.abs(end[0] - start[0]);
+  const segments = Math.max(6, Math.min(16, Math.round(latSpan * 2.3 + 7)));
+  const offshoreShift = clamp(0.45 + latSpan * 0.14 + lonSpan * 0.12, 0.45, 1.55);
+  const seaLimitLon = Math.min(start[0], end[0]) - 0.18;
+  const minBoundLon = PERU_BOUNDS[0][0] + 0.25;
+  const points: Position[] = [start];
+
+  for (let index = 1; index < segments; index += 1) {
+    const t = index / segments;
+    const linearLon = lerp(start[0], end[0], t);
+    const linearLat = lerp(start[1], end[1], t);
+    const bulge = Math.sin(Math.PI * t);
+    const progressiveShift = offshoreShift * (0.38 + bulge * 0.96);
+    const candidateLon = linearLon - progressiveShift;
+    const seaLon = clamp(Math.min(candidateLon, seaLimitLon), minBoundLon, seaLimitLon);
+    points.push([seaLon, linearLat]);
+  }
+
+  points.push(end);
+  return points;
+}
+
 function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mode: LogisticsFlow["mode"]): Position[] {
   const sourceCoord = resolveNodeCoordinates(source);
   const targetCoord = resolveNodeCoordinates(target);
   const start: Position = [sourceCoord.lon, sourceCoord.lat];
   const end: Position = [targetCoord.lon, targetCoord.lat];
+
+  if (mode === "sea") {
+    return createSeaLaneCoordinates(start, end);
+  }
+
   const control = getControlPoint(start, end, getCurvatureForMode(mode));
   const baseLine = lineString([start, control, end]);
   const curved = bezierSpline(baseLine, { resolution: 6000, sharpness: 0.8 });
@@ -185,18 +239,20 @@ export function getFlowMidpoint(feature: Feature<LineString>): Position {
 export function getNodeFocusCamera(node: LogisticsNode, mode: MapViewMode): Partial<MapCameraState> {
   const baseZoom =
     node.strategicLevel === "national" ? 7.1 : node.strategicLevel === "regional" ? 6.6 : 6.25;
+  const modePreset = getModeCameraPreset(mode);
+  const macroBearing =
+    node.macrozone === "south" || node.macrozone === "border"
+      ? -8
+      : node.macrozone === "amazon"
+        ? 8
+        : 0;
 
   return {
     longitude: node.lon,
     latitude: node.lat,
     zoom: mode === "density" ? Math.max(5.8, baseZoom - 0.6) : baseZoom,
-    pitch: mode === "emphasis3d" ? 58 : mode === "flows" ? 42 : 30,
-    bearing:
-      node.macrozone === "south" || node.macrozone === "border"
-        ? -18
-        : node.macrozone === "amazon"
-          ? 12
-          : 0,
+    pitch: modePreset.pitch,
+    bearing: modePreset.bearing + macroBearing,
   };
 }
 
@@ -227,9 +283,7 @@ function getDepartmentMaxZoom(span: number): number {
 }
 
 function getDepartmentPitch(mode: MapViewMode): number {
-  if (mode === "emphasis3d") return 38;
-  if (mode === "flows") return 34;
-  return 26;
+  return getModeCameraPreset(mode).pitch;
 }
 
 export function getDepartmentViewPreset(
@@ -265,7 +319,7 @@ export function getDepartmentViewPreset(
     duration: 1600,
     maxZoom,
     pitch,
-    bearing: 0,
+    bearing: getModeCameraPreset(mode).bearing,
   };
 }
 

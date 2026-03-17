@@ -24,6 +24,7 @@ export function App() {
   const showLabels = useMapStore((state) => state.showLabels);
   const showFlows = useMapStore((state) => state.showFlows);
   const showCorridors = useMapStore((state) => state.showCorridors);
+  const isMapExpanded = useMapStore((state) => state.isMapExpanded);
   const selectedNodeId = useMapStore((state) => state.selectedNodeId);
   const activeCategories = useMapStore((state) => state.filters.categories);
   const cameraBeforeNodeFocus = useMapStore((state) => state.cameraBeforeNodeFocus);
@@ -34,6 +35,7 @@ export function App() {
   const toggleLabels = useMapStore((state) => state.toggleLabels);
   const toggleFlows = useMapStore((state) => state.toggleFlows);
   const toggleCorridors = useMapStore((state) => state.toggleCorridors);
+  const toggleMapExpanded = useMapStore((state) => state.toggleMapExpanded);
   const setCategoryFilters = useMapStore((state) => state.setCategoryFilters);
   const clearCategoryFilters = useMapStore((state) => state.clearCategoryFilters);
   const selectNode = useMapStore((state) => state.selectNode);
@@ -48,6 +50,18 @@ export function App() {
   const stopPresentation = useMapStore((state) => state.stopPresentation);
   const { nodeMap, filteredNodes, filteredFlows, filteredNodeIds, searchMatches, departmentCounts, nodes } =
     useFilteredLogisticsData();
+
+  const getCameraPadding = useCallback(
+    (expanded: boolean) => {
+      const base = getSuggestedPadding(isDesktop);
+      if (!isDesktop) return base;
+      return {
+        ...base,
+        right: expanded ? 42 : 104,
+      };
+    },
+    [isDesktop],
+  );
 
   usePresentationTour(isDesktop);
 
@@ -83,7 +97,7 @@ export function App() {
         pitch: focus.pitch,
         bearing: focus.bearing,
         duration: 2200,
-        padding: getSuggestedPadding(isDesktop),
+        padding: getCameraPadding(isMapExpanded),
       },
       "user",
     );
@@ -95,7 +109,7 @@ export function App() {
       {
         kind: "reset",
         duration: 1600,
-        padding: getSuggestedPadding(isDesktop),
+        padding: getCameraPadding(isMapExpanded),
       },
       "user",
     );
@@ -104,13 +118,8 @@ export function App() {
   const focusDepartment = (departmentId: DepartmentId | null) => {
     setDepartment(departmentId);
     clearCameraBeforeNodeFocus();
-    const targetViewMode = viewMode === "density" ? "standard" : viewMode;
 
-    if (viewMode === "density") {
-      setViewMode("standard");
-    }
-
-    if (!showLabels) {
+    if (!showLabels && viewMode !== "density") {
       toggleLabels();
     }
 
@@ -121,7 +130,7 @@ export function App() {
         {
           kind: "reset",
           duration: 1600,
-          padding: getSuggestedPadding(isDesktop),
+          padding: getCameraPadding(isMapExpanded),
         },
         "user",
       );
@@ -130,7 +139,13 @@ export function App() {
 
     const bounds = getDepartmentBounds(departmentId);
     const focus = getDepartmentFocus(departmentId, nodes);
-    const departmentView = bounds ? getDepartmentViewPreset(bounds, isDesktop, targetViewMode) : null;
+    const departmentView = bounds ? getDepartmentViewPreset(bounds, isDesktop, viewMode) : null;
+    const departmentPadding = departmentView
+      ? {
+          ...departmentView.padding,
+          right: getCameraPadding(isMapExpanded).right,
+        }
+      : getCameraPadding(isMapExpanded);
 
     requestCameraCommand(
       bounds
@@ -138,7 +153,7 @@ export function App() {
             kind: "fitBounds",
             bounds,
             duration: departmentView?.duration ?? 1700,
-            padding: departmentView?.padding ?? getSuggestedPadding(isDesktop),
+            padding: departmentPadding,
             maxZoom: departmentView?.maxZoom ?? Math.max(7.5, focus.zoom),
             pitch: departmentView?.pitch,
             bearing: departmentView?.bearing,
@@ -151,7 +166,7 @@ export function App() {
             pitch: 34,
             bearing: 0,
             duration: 1850,
-            padding: getSuggestedPadding(isDesktop),
+            padding: getCameraPadding(isMapExpanded),
           },
       "user",
     );
@@ -185,7 +200,7 @@ export function App() {
           pitch: cameraBeforeNodeFocus.pitch,
           bearing: cameraBeforeNodeFocus.bearing,
           duration: 1300,
-          padding: getSuggestedPadding(isDesktop),
+          padding: getCameraPadding(isMapExpanded),
         },
         "user",
       );
@@ -221,6 +236,25 @@ export function App() {
     [activeCategories, allCategories, clearCategoryFilters, setCategoryFilters],
   );
 
+  const handleToggleMapExpanded = useCallback(() => {
+    const nextExpanded = !isMapExpanded;
+    toggleMapExpanded();
+    const currentCamera = useMapStore.getState().camera;
+    requestCameraCommand(
+      {
+        kind: "focus",
+        longitude: currentCamera.longitude,
+        latitude: currentCamera.latitude,
+        zoom: currentCamera.zoom,
+        pitch: currentCamera.pitch,
+        bearing: currentCamera.bearing,
+        duration: 700,
+        padding: getCameraPadding(nextExpanded),
+      },
+      "user",
+    );
+  }, [getCameraPadding, isMapExpanded, requestCameraCommand, toggleMapExpanded]);
+
   return (
     <div ref={rootRef} data-theme-depth={themeDepth} className="app-shell flex min-h-screen flex-col pb-5">
       <TopBar
@@ -231,6 +265,7 @@ export function App() {
         showLabels={showLabels}
         showFlows={showFlows}
         showCorridors={showCorridors}
+        isMapExpanded={isMapExpanded}
         exportPending={exportPending}
         presentation={presentation}
         onViewModeChange={setViewMode}
@@ -238,6 +273,7 @@ export function App() {
         onToggleLabels={toggleLabels}
         onToggleFlows={toggleFlows}
         onToggleCorridors={toggleCorridors}
+        onToggleMapExpanded={handleToggleMapExpanded}
         onResetCamera={resetCamera}
         onExport={exportCurrentView}
         onStartPresentation={startPresentation}
@@ -246,7 +282,13 @@ export function App() {
         onStopPresentation={stopPresentation}
       />
 
-      <main className="relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:h-[calc(100vh-11rem)] lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)_minmax(20rem,24rem)]">
+      <main
+        className={`relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:h-[calc(100vh-11rem)] ${
+          isMapExpanded
+            ? "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)]"
+            : "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)_minmax(20rem,24rem)]"
+        }`}
+      >
         <FiltersPanel
           filteredCount={filteredNodes.length}
           totalCount={nodes.length}
@@ -276,22 +318,24 @@ export function App() {
           </div>
         </section>
 
-        <Suspense
-          fallback={
-            <aside className="panel-shell order-3 min-h-[18rem] rounded-[28px] px-5 py-5 lg:min-h-0">
-              <div className="font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
-                Cargando panel
-              </div>
-            </aside>
-          }
-        >
-          <LazySidePanel
-            node={selectedNode}
-            connections={connectedNodes}
-            onFocusNode={focusNode}
-            onClose={closeNodeDetails}
-          />
-        </Suspense>
+        {!isMapExpanded ? (
+          <Suspense
+            fallback={
+              <aside className="panel-shell order-3 min-h-[18rem] rounded-[28px] px-5 py-5 lg:min-h-0">
+                <div className="font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+                  Cargando panel
+                </div>
+              </aside>
+            }
+          >
+            <LazySidePanel
+              node={selectedNode}
+              connections={connectedNodes}
+              onFocusNode={focusNode}
+              onClose={closeNodeDetails}
+            />
+          </Suspense>
+        ) : null}
       </main>
     </div>
   );

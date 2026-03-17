@@ -37,6 +37,12 @@ interface FlowModeZoomCalibration {
   pulseBoost: number;
 }
 
+type CalibrationBand = {
+  low: FlowModeZoomCalibration;
+  mid: FlowModeZoomCalibration;
+  high: FlowModeZoomCalibration;
+};
+
 const FLOW_PROFILE_LOW: FlowZoomProfile = {
   widthScale: 0.78,
   arcHeightScale: 0.74,
@@ -70,6 +76,22 @@ function clamp(value: number, min: number, max: number): number {
 
 function lerp(start: number, end: number, ratio: number): number {
   return start + (end - start) * ratio;
+}
+
+function interpolateCalibration(
+  start: FlowModeZoomCalibration,
+  end: FlowModeZoomCalibration,
+  ratio: number,
+): FlowModeZoomCalibration {
+  return {
+    widthBoost: lerp(start.widthBoost, end.widthBoost, ratio),
+    corridorAlphaBoost: lerp(start.corridorAlphaBoost, end.corridorAlphaBoost, ratio),
+    tripAlphaBoost: lerp(start.tripAlphaBoost, end.tripAlphaBoost, ratio),
+    trailBoost: lerp(start.trailBoost, end.trailBoost, ratio),
+    arcHeightBoost: lerp(start.arcHeightBoost, end.arcHeightBoost, ratio),
+    arcOpacityBoost: lerp(start.arcOpacityBoost, end.arcOpacityBoost, ratio),
+    pulseBoost: lerp(start.pulseBoost, end.pulseBoost, ratio),
+  };
 }
 
 function interpolateFlowProfile(start: FlowZoomProfile, end: FlowZoomProfile, ratio: number): FlowZoomProfile {
@@ -141,78 +163,105 @@ export function getFlowModeZoomCalibration(
   mapZoom: number,
 ): FlowModeZoomCalibration {
   const zoom = clamp(mapZoom, 4.2, 9);
-  const lowBandRatio = clamp((zoom - 4.2) / (5.6 - 4.2), 0, 1);
-  const highBandRatio = clamp((zoom - 7.2) / (9 - 7.2), 0, 1);
+  const lowToMidRatio = clamp((zoom - 4.2) / (6.2 - 4.2), 0, 1);
+  const midToHighRatio = clamp((zoom - 6.2) / (9 - 6.2), 0, 1);
 
-  if (viewMode === "flows") {
-    if (zoom <= 5.6) {
-      return {
-        widthBoost: lerp(0.86, 0.96, lowBandRatio),
-        corridorAlphaBoost: lerp(0.8, 0.92, lowBandRatio),
-        tripAlphaBoost: lerp(0.76, 0.88, lowBandRatio),
-        trailBoost: lerp(0.88, 0.98, lowBandRatio),
-        arcHeightBoost: lerp(0.84, 0.94, lowBandRatio),
-        arcOpacityBoost: lerp(0.78, 0.9, lowBandRatio),
-        pulseBoost: lerp(0.92, 0.98, lowBandRatio),
-      };
-    }
+  const band: CalibrationBand =
+    viewMode === "flows"
+      ? {
+          low: {
+            widthBoost: 0.86,
+            corridorAlphaBoost: 0.8,
+            tripAlphaBoost: 0.76,
+            trailBoost: 0.88,
+            arcHeightBoost: 0.84,
+            arcOpacityBoost: 0.78,
+            pulseBoost: 0.92,
+          },
+          mid: {
+            widthBoost: 0.98,
+            corridorAlphaBoost: 0.94,
+            tripAlphaBoost: 0.9,
+            trailBoost: 1,
+            arcHeightBoost: 0.95,
+            arcOpacityBoost: 0.92,
+            pulseBoost: 0.99,
+          },
+          high: {
+            widthBoost: 0.96,
+            corridorAlphaBoost: 1.08,
+            tripAlphaBoost: 1.12,
+            trailBoost: 1.12,
+            arcHeightBoost: 0.9,
+            arcOpacityBoost: 1.04,
+            pulseBoost: 1.06,
+          },
+        }
+      : viewMode === "emphasis3d"
+        ? {
+            low: {
+              widthBoost: 0.72,
+              corridorAlphaBoost: 0.7,
+              tripAlphaBoost: 0.56,
+              trailBoost: 0.84,
+              arcHeightBoost: 0.72,
+              arcOpacityBoost: 0,
+              pulseBoost: 0.9,
+            },
+            mid: {
+              widthBoost: 0.82,
+              corridorAlphaBoost: 0.8,
+              tripAlphaBoost: 0.66,
+              trailBoost: 0.91,
+              arcHeightBoost: 0.68,
+              arcOpacityBoost: 0,
+              pulseBoost: 0.95,
+            },
+            high: {
+              widthBoost: 0.8,
+              corridorAlphaBoost: 0.76,
+              tripAlphaBoost: 0.62,
+              trailBoost: 0.92,
+              arcHeightBoost: 0.66,
+              arcOpacityBoost: 0,
+              pulseBoost: 0.96,
+            },
+          }
+        : {
+            low: {
+              widthBoost: 0.88,
+              corridorAlphaBoost: 0.86,
+              tripAlphaBoost: 0.78,
+              trailBoost: 0.92,
+              arcHeightBoost: 0.9,
+              arcOpacityBoost: 0,
+              pulseBoost: 0.94,
+            },
+            mid: {
+              widthBoost: 0.97,
+              corridorAlphaBoost: 0.95,
+              tripAlphaBoost: 0.91,
+              trailBoost: 0.99,
+              arcHeightBoost: 0.95,
+              arcOpacityBoost: 0,
+              pulseBoost: 0.99,
+            },
+            high: {
+              widthBoost: 0.94,
+              corridorAlphaBoost: 1,
+              tripAlphaBoost: 1.04,
+              trailBoost: 1.06,
+              arcHeightBoost: 0.86,
+              arcOpacityBoost: 0,
+              pulseBoost: 1,
+            },
+          };
 
-    return {
-      widthBoost: lerp(1, 0.96, highBandRatio),
-      corridorAlphaBoost: lerp(1, 1.08, highBandRatio),
-      tripAlphaBoost: lerp(1, 1.12, highBandRatio),
-      trailBoost: lerp(1, 1.12, highBandRatio),
-      arcHeightBoost: lerp(1, 0.9, highBandRatio),
-      arcOpacityBoost: lerp(1, 1.04, highBandRatio),
-      pulseBoost: lerp(1, 1.06, highBandRatio),
-    };
+  if (zoom <= 6.2) {
+    return interpolateCalibration(band.low, band.mid, lowToMidRatio);
   }
 
-  if (viewMode === "emphasis3d") {
-    if (zoom <= 5.6) {
-      return {
-        widthBoost: lerp(0.72, 0.8, lowBandRatio),
-        corridorAlphaBoost: lerp(0.7, 0.78, lowBandRatio),
-        tripAlphaBoost: lerp(0.56, 0.64, lowBandRatio),
-        trailBoost: lerp(0.84, 0.9, lowBandRatio),
-        arcHeightBoost: lerp(0.72, 0.68, lowBandRatio),
-        arcOpacityBoost: 0,
-        pulseBoost: lerp(0.9, 0.94, lowBandRatio),
-      };
-    }
-
-    return {
-      widthBoost: lerp(0.86, 0.8, highBandRatio),
-      corridorAlphaBoost: lerp(0.84, 0.76, highBandRatio),
-      tripAlphaBoost: lerp(0.74, 0.62, highBandRatio),
-      trailBoost: lerp(0.94, 0.92, highBandRatio),
-      arcHeightBoost: lerp(0.68, 0.66, highBandRatio),
-      arcOpacityBoost: 0,
-      pulseBoost: lerp(0.96, 0.96, highBandRatio),
-    };
-  }
-
-  if (zoom <= 5.6) {
-    return {
-      widthBoost: lerp(0.88, 0.96, lowBandRatio),
-      corridorAlphaBoost: lerp(0.86, 0.94, lowBandRatio),
-      tripAlphaBoost: lerp(0.78, 0.9, lowBandRatio),
-      trailBoost: lerp(0.92, 0.98, lowBandRatio),
-      arcHeightBoost: lerp(0.9, 0.96, lowBandRatio),
-      arcOpacityBoost: 0,
-      pulseBoost: lerp(0.94, 0.98, lowBandRatio),
-    };
-  }
-
-  return {
-    widthBoost: lerp(1, 0.94, highBandRatio),
-    corridorAlphaBoost: lerp(1, 1, highBandRatio),
-    tripAlphaBoost: lerp(1, 1.04, highBandRatio),
-    trailBoost: lerp(1, 1.06, highBandRatio),
-    arcHeightBoost: lerp(1, 0.86, highBandRatio),
-    arcOpacityBoost: 0,
-    pulseBoost: lerp(1, 1, highBandRatio),
-  };
+  return interpolateCalibration(band.mid, band.high, midToHighRatio);
 }
 
 function resolveFlowRegionFocus(
@@ -251,9 +300,11 @@ export function createFlowLayers({
   const modeZoomCalibration = getFlowModeZoomCalibration(viewMode, mapZoom);
   const zoomArcFlattening = clamp(1 - Math.max(0, mapZoom - 6.8) * 0.12, 0.62, 1);
   const modeHeightBoost = viewMode === "flows" ? 1.08 : viewMode === "emphasis3d" ? 0.78 : 0.92;
-  const corridorOpacity = (viewMode === "flows" ? 0.68 : viewMode === "emphasis3d" ? 0.48 : 0.6) *
-    modeZoomCalibration.corridorAlphaBoost;
-  const arcMinHeight = viewMode === "flows" ? 6400 : 3800;
+  const corridorOpacity = viewMode === "flows" ? 0.68 : viewMode === "emphasis3d" ? 0.48 : 0.6;
+  const zoomRatio = clamp((mapZoom - 4.2) / (9 - 4.2), 0, 1);
+  const arcMinHeight =
+    (viewMode === "flows" ? 1 : 0.82) * Math.round(lerp(6200, 2600, zoomRatio));
+  const arcMaxHeight = Math.round(lerp(154000, 98000, zoomRatio));
 
   return [
     new PathLayer<FlowFeature>({
@@ -323,14 +374,14 @@ export function createFlowLayers({
         modeZoomCalibration.widthBoost,
       getHeight: (feature) =>
         clamp(
-          feature.properties.distanceKm *
-            780 *
+          Math.pow(feature.properties.distanceKm, 0.78) *
+            1700 *
             profile.arcHeightScale *
             zoomArcFlattening *
             modeHeightBoost *
             modeZoomCalibration.arcHeightBoost,
           arcMinHeight,
-          132000,
+          arcMaxHeight,
         ),
     }),
     new TripsLayer<FlowFeature>({

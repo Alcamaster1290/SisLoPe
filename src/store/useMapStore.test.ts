@@ -61,7 +61,7 @@ describe("useMapStore", () => {
     expect(state.renderHealth).toEqual({
       maplibre: false,
       deck: false,
-      three: false,
+      three: true,
     });
   });
 
@@ -86,7 +86,7 @@ describe("useMapStore", () => {
     expect(useMapStore.getState().renderHealth).toEqual({
       maplibre: false,
       deck: false,
-      three: false,
+      three: true,
     });
   });
 

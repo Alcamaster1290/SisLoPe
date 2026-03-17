@@ -189,7 +189,7 @@ export function getEmphasisNodes(
 
   if (viewMode === "emphasis3d") {
     for (const node of nodes) {
-      if (node.strategicLevel === "national") {
+      if (node.strategicLevel === "national" || node.strategicLevel === "regional") {
         emphasisNodes.set(node.id, node);
       }
     }
@@ -201,7 +201,32 @@ export function getEmphasisNodes(
     if (focusNode) emphasisNodes.set(focusNode.id, focusNode);
   }
 
-  return [...emphasisNodes.values()].slice(0, 18);
+  return [...emphasisNodes.values()]
+    .sort((left, right) => {
+      const leftPriority =
+        left.id === selectedNodeId
+          ? 1000
+          : left.id === hoveredNodeId
+            ? 900
+            : left.strategicLevel === "national"
+              ? 700
+              : 480;
+      const rightPriority =
+        right.id === selectedNodeId
+          ? 1000
+          : right.id === hoveredNodeId
+            ? 900
+            : right.strategicLevel === "national"
+              ? 700
+              : 480;
+
+      if (leftPriority !== rightPriority) {
+        return rightPriority - leftPriority;
+      }
+
+      return left.name.localeCompare(right.name);
+    })
+    .slice(0, 26);
 }
 
 export function createNodeLayers({
@@ -220,6 +245,7 @@ export function createNodeLayers({
 }: NodeLayerOptions) {
   const modeProfile = getNodeModeProfile(viewMode, mapZoom);
   const visibleNodes = !clustersActive;
+  const showNodeSymbols = visibleNodes && viewMode !== "density";
   const emphasisNodes = getEmphasisNodes(nodes, hoveredNodeId, selectedNodeId, viewMode);
   const highlightedNodes = nodes.filter((node) =>
     isFocusNode(node.id, hoveredNodeId, selectedNodeId),
@@ -247,9 +273,10 @@ export function createNodeLayers({
     new HexagonLayer<LogisticsNode>({
       id: "node-density",
       data: nodes,
-      visible: visibleNodes && viewMode === "density",
+      visible: viewMode === "density",
       pickable: false,
       extruded: true,
+      gpuAggregation: true,
       radius: modeProfile.densityRadius,
       elevationScale: modeProfile.densityElevationScale,
       coverage: modeProfile.densityCoverage,
@@ -262,12 +289,13 @@ export function createNodeLayers({
       lowerPercentile: 5,
       upperPercentile: 97,
       colorRange: [
-        [6, 16, 26],
-        [21, 49, 82],
-        [49, 88, 136],
-        [88, 136, 192],
-        [184, 152, 96],
-        [226, 198, 118],
+        [10, 28, 45],
+        [25, 62, 102],
+        [53, 100, 150],
+        [90, 143, 198],
+        [135, 176, 216],
+        [205, 176, 110],
+        [234, 204, 130],
       ],
       material: {
         ambient: 0.58,
@@ -279,7 +307,7 @@ export function createNodeLayers({
     new ScatterplotLayer<LogisticsNode>({
       id: "node-halo",
       data: viewMode === "emphasis3d" ? emphasisNodes : highlightedNodes,
-      visible: visibleNodes,
+      visible: showNodeSymbols,
       pickable: false,
       stroked: false,
       filled: true,
@@ -293,7 +321,7 @@ export function createNodeLayers({
     new ScatterplotLayer<LogisticsNode>({
       id: "node-mode-accent",
       data: modeAccentNodes,
-      visible: visibleNodes && modeAccentNodes.length > 0,
+      visible: showNodeSymbols && modeAccentNodes.length > 0,
       pickable: false,
       stroked: true,
       filled: false,
@@ -309,7 +337,7 @@ export function createNodeLayers({
     new ScatterplotLayer<LogisticsNode>({
       id: "node-scatter",
       data: nodes,
-      visible: visibleNodes,
+      visible: showNodeSymbols,
       pickable: true,
       stroked: true,
       filled: true,
@@ -352,7 +380,7 @@ export function createNodeLayers({
     new PathLayer<NodeLabelDatum>({
       id: "node-label-flux",
       data: visibleLabelData,
-      visible: visibleNodes && showLabels && viewMode !== "density",
+      visible: showNodeSymbols && showLabels,
       pickable: false,
       widthUnits: "pixels",
       capRounded: true,
@@ -371,7 +399,7 @@ export function createNodeLayers({
     new TextLayer<NodeLabelDatum>({
       id: "node-labels",
       data: visibleLabelData,
-      visible: visibleNodes && showLabels && viewMode !== "density",
+      visible: showNodeSymbols && showLabels,
       pickable: false,
       billboard: true,
       fontFamily: "Rajdhani, sans-serif",

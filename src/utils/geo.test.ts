@@ -70,7 +70,7 @@ describe("geo utilities", () => {
     const widePreset = getDepartmentViewPreset(wideBounds, true, "standard");
 
     expect(urbanPreset.maxZoom).toBeGreaterThan(widePreset.maxZoom);
-    expect(urbanPreset.pitch).toBe(34);
+    expect(urbanPreset.pitch).toBe(42);
     expect(widePreset.bearing).toBe(0);
     expect(urbanPreset.padding.right).toBe(urbanPreset.padding.left);
   });

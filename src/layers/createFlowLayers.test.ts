@@ -69,4 +69,17 @@ describe("flow zoom profile", () => {
     expect(lowEmphasis.widthBoost).toBeLessThan(1);
     expect(highStandard.arcHeightBoost).toBeLessThan(1);
   });
+
+  it("keeps calibration continuous around the cluster transition band", () => {
+    const flowsBefore = getFlowModeZoomCalibration("flows", 5.59);
+    const flowsAfter = getFlowModeZoomCalibration("flows", 5.61);
+    const emphasisBefore = getFlowModeZoomCalibration("emphasis3d", 5.59);
+    const emphasisAfter = getFlowModeZoomCalibration("emphasis3d", 5.61);
+
+    expect(Math.abs(flowsBefore.widthBoost - flowsAfter.widthBoost)).toBeLessThan(0.04);
+    expect(Math.abs(flowsBefore.corridorAlphaBoost - flowsAfter.corridorAlphaBoost)).toBeLessThan(0.05);
+    expect(Math.abs(flowsBefore.tripAlphaBoost - flowsAfter.tripAlphaBoost)).toBeLessThan(0.05);
+    expect(Math.abs(emphasisBefore.widthBoost - emphasisAfter.widthBoost)).toBeLessThan(0.04);
+    expect(Math.abs(emphasisBefore.tripAlphaBoost - emphasisAfter.tripAlphaBoost)).toBeLessThan(0.05);
+  });
 });
