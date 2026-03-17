@@ -40,6 +40,8 @@ interface MapStoreState {
   setDepartment: (department: DepartmentId | null) => void;
   setHoveredDepartment: (department: DepartmentId | null) => void;
   toggleCategory: (category: NodeCategory) => void;
+  setCategoryFilters: (categories: NodeCategory[]) => void;
+  clearCategoryFilters: () => void;
   toggleFilterValue: (
     key: "macrozones" | "strategicLevels" | "terrains",
     value: Macrozone | StrategicLevel | Terrain,
@@ -176,6 +178,22 @@ export const useMapStore = create<MapStoreState>((set) => ({
         ...pausePresentationOnUserAction(state),
       };
     }),
+  setCategoryFilters: (categories) =>
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        categories,
+      },
+      ...pausePresentationOnUserAction(state),
+    })),
+  clearCategoryFilters: () =>
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        categories: [],
+      },
+      ...pausePresentationOnUserAction(state),
+    })),
   toggleFilterValue: (key, value) =>
     set((state) => {
       const current = state.filters[key] as Array<Macrozone | StrategicLevel | Terrain>;

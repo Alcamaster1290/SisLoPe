@@ -26,6 +26,26 @@ describe("useMapStore", () => {
     expect(useMapStore.getState().filters.categories).toContain("port_sea");
   });
 
+  it("clears only category filters without touching department selection", () => {
+    const store = useMapStore.getState();
+    store.toggleCategory("port_sea");
+    store.toggleCategory("airport");
+    store.setDepartment("lima");
+
+    store.clearCategoryFilters();
+
+    expect(useMapStore.getState().filters.categories).toEqual([]);
+    expect(useMapStore.getState().selectedDepartment).toBe("lima");
+    expect(useMapStore.getState().filters.department).toBe("lima");
+  });
+
+  it("supports setting explicit category lists", () => {
+    const store = useMapStore.getState();
+    store.setCategoryFilters(["port_sea", "airport"]);
+
+    expect(useMapStore.getState().filters.categories).toEqual(["port_sea", "airport"]);
+  });
+
   it("creates camera commands with nonce", () => {
     useMapStore.getState().requestCameraCommand({ kind: "reset", duration: 900 });
 

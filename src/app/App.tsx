@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { getDepartmentFocus } from "@/data/departments";
 import { getDepartmentBounds } from "@/data/departmentRegions";
 import { LogisticsMap } from "@/components/map/LogisticsMap";
@@ -10,8 +10,9 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { usePresentationTour } from "@/hooks/usePresentationTour";
 import { exportViewAsPng } from "@/lib/exportView";
 import { useMapStore } from "@/store/useMapStore";
-import type { DepartmentId, LogisticsNode } from "@/types/logistics";
+import type { DepartmentId, LogisticsNode, NodeCategory } from "@/types/logistics";
 import { getDepartmentViewPreset, getNodeFocusCamera, getSuggestedPadding } from "@/utils/geo";
+import { CATEGORY_META } from "@/utils/colorScale";
 
 const LazySidePanel = lazy(() => import("@/components/map/SidePanel"));
 
@@ -24,6 +25,7 @@ export function App() {
   const showFlows = useMapStore((state) => state.showFlows);
   const showCorridors = useMapStore((state) => state.showCorridors);
   const selectedNodeId = useMapStore((state) => state.selectedNodeId);
+  const activeCategories = useMapStore((state) => state.filters.categories);
   const cameraBeforeNodeFocus = useMapStore((state) => state.cameraBeforeNodeFocus);
   const exportPending = useMapStore((state) => state.exportPending);
   const presentation = useMapStore((state) => state.presentation);
@@ -32,6 +34,8 @@ export function App() {
   const toggleLabels = useMapStore((state) => state.toggleLabels);
   const toggleFlows = useMapStore((state) => state.toggleFlows);
   const toggleCorridors = useMapStore((state) => state.toggleCorridors);
+  const setCategoryFilters = useMapStore((state) => state.setCategoryFilters);
+  const clearCategoryFilters = useMapStore((state) => state.clearCategoryFilters);
   const selectNode = useMapStore((state) => state.selectNode);
   const setDepartment = useMapStore((state) => state.setDepartment);
   const requestCameraCommand = useMapStore((state) => state.requestCameraCommand);
@@ -54,6 +58,7 @@ export function App() {
   }, [filteredNodeIds, selectedNodeId, selectNode]);
 
   const selectedNode = selectedNodeId ? nodeMap.get(selectedNodeId) ?? null : null;
+  const allCategories = useMemo(() => Object.keys(CATEGORY_META) as NodeCategory[], []);
 
   const connectedNodes = useMemo<LogisticsNode[]>(() => {
     if (!selectedNode?.connections) return [];
@@ -99,25 +104,34 @@ export function App() {
   const focusDepartment = (departmentId: DepartmentId | null) => {
     setDepartment(departmentId);
     clearCameraBeforeNodeFocus();
-
-    if (!departmentId) {
-      resetCamera();
-      return;
-    }
-
-    const bounds = getDepartmentBounds(departmentId);
-    const focus = getDepartmentFocus(departmentId, nodes);
-    const departmentView = bounds ? getDepartmentViewPreset(bounds, isDesktop, viewMode) : null;
-
-    if (!showLabels) {
-      toggleLabels();
-    }
+    const targetViewMode = viewMode === "density" ? "standard" : viewMode;
 
     if (viewMode === "density") {
       setViewMode("standard");
     }
 
+    if (!showLabels) {
+      toggleLabels();
+    }
+
     selectNode(null, "system");
+
+    if (!departmentId) {
+      requestCameraCommand(
+        {
+          kind: "reset",
+          duration: 1600,
+          padding: getSuggestedPadding(isDesktop),
+        },
+        "user",
+      );
+      return;
+    }
+
+    const bounds = getDepartmentBounds(departmentId);
+    const focus = getDepartmentFocus(departmentId, nodes);
+    const departmentView = bounds ? getDepartmentViewPreset(bounds, isDesktop, targetViewMode) : null;
+
     requestCameraCommand(
       bounds
         ? {
@@ -182,6 +196,31 @@ export function App() {
     resetCamera();
   };
 
+  const handleLegendToggleCategory = useCallback(
+    (category: NodeCategory) => {
+      if (activeCategories.length === 0) {
+        setCategoryFilters(allCategories.filter((entry) => entry !== category));
+        return;
+      }
+
+      if (activeCategories.includes(category)) {
+        const next = activeCategories.filter((entry) => entry !== category);
+        setCategoryFilters(next.length === 0 ? [] : next);
+        return;
+      }
+
+      const next = [...activeCategories, category];
+      const uniqueNext = [...new Set(next)];
+      if (uniqueNext.length >= allCategories.length) {
+        clearCategoryFilters();
+        return;
+      }
+
+      setCategoryFilters(uniqueNext);
+    },
+    [activeCategories, allCategories, clearCategoryFilters, setCategoryFilters],
+  );
+
   return (
     <div ref={rootRef} data-theme-depth={themeDepth} className="app-shell flex min-h-screen flex-col pb-5">
       <TopBar
@@ -219,9 +258,20 @@ export function App() {
 
         <section className="order-1 h-[68vh] min-h-[32rem] overflow-hidden rounded-[30px] lg:order-2 lg:h-full lg:min-h-0">
           <div className="panel-shell-strong relative h-full overflow-hidden rounded-[30px]">
-            <LogisticsMap nodes={filteredNodes} flows={filteredFlows} nodeMap={nodeMap} isDesktop={isDesktop} />
+            <LogisticsMap
+              nodes={filteredNodes}
+              flows={filteredFlows}
+              nodeMap={nodeMap}
+              isDesktop={isDesktop}
+              onSelectDepartment={focusDepartment}
+            />
             <div className="absolute bottom-4 left-4 z-20">
-              <MapLegend visibleNodes={filteredNodes} />
+              <MapLegend
+                visibleNodes={filteredNodes}
+                activeCategories={activeCategories}
+                onToggleCategory={handleLegendToggleCategory}
+                onClearCategories={clearCategoryFilters}
+              />
             </div>
           </div>
         </section>

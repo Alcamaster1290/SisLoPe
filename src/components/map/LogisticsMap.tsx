@@ -3,7 +3,7 @@ import { WebMercatorViewport, type Deck, type MapView, type PickingInfo } from "
 import type { FeatureCollection, GeoJsonProperties, Point } from "geojson";
 import maplibregl from "maplibre-gl";
 import { getDepartmentForNode } from "@/data/departments";
-import { departmentRegions, getDepartmentBounds } from "@/data/departmentRegions";
+import { departmentRegions } from "@/data/departmentRegions";
 import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
@@ -26,7 +26,6 @@ import type {
 } from "@/types/logistics";
 import {
   flowsToFeatureCollection,
-  getDepartmentViewPreset,
   getNodeFocusCamera,
   getSuggestedPadding,
   INITIAL_CAMERA_STATE,
@@ -56,6 +55,7 @@ interface LogisticsMapProps {
   flows: LogisticsFlow[];
   nodeMap: Map<string, LogisticsNode>;
   isDesktop: boolean;
+  onSelectDepartment: (departmentId: DepartmentId | null) => void;
 }
 
 type ClusterFeature = GeoJSON.Feature<Point, GeoJsonProperties>;
@@ -351,12 +351,19 @@ function getModeAtmosphereClass(viewMode: MapViewMode): string {
   return "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(79,108,148,0.12),transparent_26%),radial-gradient(circle_at_76%_22%,rgba(209,158,92,0.08),transparent_22%),linear-gradient(180deg,rgba(5,10,16,0.12),rgba(3,7,13,0.38))]";
 }
 
-export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapProps) {
+export function LogisticsMap({
+  nodes,
+  flows,
+  nodeMap,
+  isDesktop,
+  onSelectDepartment,
+}: LogisticsMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const deckRef = useRef<Deck<MapView[]> | null>(null);
   const viewModeRef = useRef(useMapStore.getState().viewMode);
   const effectiveViewModeRef = useRef(viewModeRef.current);
+  const onSelectDepartmentRef = useRef(onSelectDepartment);
   const nodeMapRef = useRef(nodeMap);
   const isDesktopRef = useRef(isDesktop);
   const [clustersActive, setClustersActive] = useState(INITIAL_CAMERA_STATE.zoom < CLUSTER_THRESHOLD);
@@ -379,7 +386,6 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
   const renderHealth = useMapStore((state) => state.renderHealth);
   const setHoveredNode = useMapStore((state) => state.setHoveredNode);
   const setHoveredDepartment = useMapStore((state) => state.setHoveredDepartment);
-  const setDepartment = useMapStore((state) => state.setDepartment);
   const setCamera = useMapStore((state) => state.setCamera);
   const setMapStatus = useMapStore((state) => state.setMapStatus);
   const setRendererHealth = useMapStore((state) => state.setRendererHealth);
@@ -630,6 +636,10 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
   }, [focusedDepartment]);
 
   useEffect(() => {
+    onSelectDepartmentRef.current = onSelectDepartment;
+  }, [onSelectDepartment]);
+
+  useEffect(() => {
     nodeMapRef.current = nodeMap;
   }, [nodeMap]);
 
@@ -726,28 +736,6 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
       delayedResizeIds.push(timeoutId);
     };
 
-    const focusDepartmentOnMap = (departmentId: DepartmentId) => {
-      const bounds = getDepartmentBounds(departmentId);
-      if (!bounds) return false;
-      const viewPreset = getDepartmentViewPreset(bounds, isDesktopRef.current, effectiveViewModeRef.current);
-
-      map.fitBounds(
-        [
-          [bounds[0], bounds[1]],
-          [bounds[2], bounds[3]],
-        ],
-        {
-          padding: viewPreset.padding,
-          duration: viewPreset.duration,
-          maxZoom: viewPreset.maxZoom,
-          pitch: viewPreset.pitch,
-          bearing: viewPreset.bearing,
-          essential: true,
-        },
-      );
-      return true;
-    };
-
     const readyTimeout = window.setTimeout(() => {
       if (idleResolved) return;
       const state = useMapStore.getState();
@@ -817,26 +805,8 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
         if (!departmentId) return;
 
         useMapStore.getState().pausePresentation();
-        useMapStore.getState().selectNode(null, "user");
-        useMapStore.getState().clearCameraBeforeNodeFocus();
-        const nextDepartment =
-          selectedDepartmentRef.current === departmentId ? null : departmentId;
-
-        setDepartment(nextDepartment);
-        if (nextDepartment) {
-          focusDepartmentOnMap(nextDepartment);
-          return;
-        }
-
-        map.easeTo({
-          center: [INITIAL_CAMERA_STATE.longitude, INITIAL_CAMERA_STATE.latitude],
-          zoom: INITIAL_CAMERA_STATE.zoom,
-          pitch: INITIAL_CAMERA_STATE.pitch,
-          bearing: INITIAL_CAMERA_STATE.bearing,
-          duration: 1500,
-          padding: getSuggestedPadding(isDesktopRef.current),
-          essential: true,
-        });
+        const nextDepartment = selectedDepartmentRef.current === departmentId ? null : departmentId;
+        onSelectDepartmentRef.current(nextDepartment);
       });
     });
 
@@ -1015,7 +985,6 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
     resetRenderPipeline,
     retryNonce,
     setCamera,
-    setDepartment,
     setHoveredDepartment,
     setHoveredNode,
     setMapStatus,
@@ -1245,6 +1214,16 @@ export function LogisticsMap({ nodes, flows, nodeMap, isDesktop }: LogisticsMapP
           Silueta nacional, nodos georreferenciados y controles de navegacion visibles aun si las capas avanzadas se degradan.
         </p>
       </div>
+      {effectiveViewMode === "emphasis3d" ? (
+        <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[rgba(159,186,208,0.28)] bg-[rgba(7,16,26,0.78)] px-4 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.28)] backdrop-blur-lg">
+          <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">
+            Modo 3D emphasis
+          </div>
+          <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">
+            Los pines 3D marcan nodos estrategicos. Cada pin incluye etiqueta anclada y linea guia hacia la coordenada real.
+          </p>
+        </div>
+      ) : null}
       <div className="absolute right-5 top-5 z-20 flex flex-col gap-2">
         <button
           type="button"
