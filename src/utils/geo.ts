@@ -141,27 +141,19 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
   const latDelta = end[1] - start[1];
   const latSpan = Math.abs(latDelta);
   const lonSpan = Math.abs(end[0] - start[0]);
-  const segments = Math.max(6, Math.min(16, Math.round(latSpan * 2.3 + 7)));
-  const offshoreShift = clamp(0.45 + latSpan * 0.14 + lonSpan * 0.12, 0.45, 1.55);
-  const seaLimitLon = Math.min(start[0], end[0]) - 0.18;
+  const offshoreShift = clamp(0.72 + latSpan * 0.18 + lonSpan * 0.42, 0.72, 1.9);
+  const seaLimitLon = Math.min(start[0], end[0]) - offshoreShift;
   const minBoundLon = PERU_BOUNDS[0][0] + 0.25;
-  const guidePoints: Position[] = [start];
+  const seaOuterLon = clamp(seaLimitLon, minBoundLon, Math.min(start[0], end[0]) - 0.36);
+  const direction = latDelta >= 0 ? 1 : -1;
+  const lateralBias = clamp(latSpan * 0.08, 0.06, 0.24) * direction;
+  const control1: Position = [seaOuterLon, lerp(start[1], end[1], 0.28) + lateralBias];
+  const control2: Position = [seaOuterLon, lerp(start[1], end[1], 0.72) - lateralBias];
+  const guidePoints: Position[] = [start, control1, control2, end];
 
-  for (let index = 1; index < segments; index += 1) {
-    const t = index / segments;
-    const linearLon = lerp(start[0], end[0], t);
-    const linearLat = lerp(start[1], end[1], t);
-    const bulge = Math.sin(Math.PI * t);
-    const progressiveShift = offshoreShift * (0.34 + bulge * 1.06);
-    const candidateLon = linearLon - progressiveShift;
-    const seaLon = clamp(Math.min(candidateLon, seaLimitLon), minBoundLon, seaLimitLon);
-    guidePoints.push([seaLon, linearLat]);
-  }
-
-  guidePoints.push(end);
   const smoothLine = bezierSpline(lineString(guidePoints), {
-    resolution: 13000,
-    sharpness: 0.52,
+    resolution: 16000,
+    sharpness: 0.62,
   });
 
   if (smoothLine.geometry.type !== "LineString") {
@@ -173,20 +165,13 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
     return guidePoints;
   }
 
-  const stabilized: Position[] = smoothed.map((position, index) => {
-    if (index === 0) return start;
-    if (index === smoothed.length - 1) return end;
-
-    const t = index / (smoothed.length - 1);
-    const linearLon = lerp(start[0], end[0], t);
-    const bulge = Math.sin(Math.PI * t);
-    const progressiveShift = offshoreShift * (0.28 + bulge * 1.02);
-    const offshoreLimit = Math.min(linearLon - progressiveShift * 0.58, seaLimitLon);
-    const lon = clamp(Math.min(position[0], offshoreLimit), minBoundLon, seaLimitLon);
-    return [lon, position[1]];
+  // Preserve exact endpoints and keep the rest smooth and offshore.
+  smoothed[0] = start;
+  smoothed[smoothed.length - 1] = end;
+  return smoothed.map((position, index) => {
+    if (index === 0 || index === smoothed.length - 1) return position;
+    return [Math.min(position[0], Math.min(start[0], end[0]) - 0.22), position[1]];
   });
-
-  return stabilized;
 }
 
 function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mode: LogisticsFlow["mode"]): Position[] {
