@@ -94,6 +94,7 @@ export function nodesToFeatureCollection(nodes: LogisticsNode[]): NodeFeatureCol
 }
 
 function getCurvatureForMode(mode: LogisticsFlow["mode"]): number {
+  if (mode === "air") return 0.2;
   if (mode === "sea") return 0.24;
   if (mode === "river") return 0.16;
   return 0.08;

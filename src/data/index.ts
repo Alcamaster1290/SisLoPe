@@ -28,7 +28,7 @@ function inferLandImportance(source: LogisticsNode, target: LogisticsNode): Logi
 function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFlow[]): LogisticsFlow[] {
   const completed: LogisticsFlow[] = [...baseFlows];
   const existingPairs = new Set(baseFlows.map((flow) => buildPairKey(flow.from, flow.to)));
-  const addedPairs = new Set<string>();
+  const addedLandPairs = new Set<string>();
 
   for (const sourceNode of inputNodes) {
     for (const targetId of sourceNode.connections ?? []) {
@@ -36,7 +36,9 @@ function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFl
       if (!targetNode) continue;
 
       const pairKey = buildPairKey(sourceNode.id, targetId);
-      if (existingPairs.has(pairKey) || addedPairs.has(pairKey)) continue;
+      if (existingPairs.has(pairKey) || addedLandPairs.has(pairKey)) {
+        continue;
+      }
 
       completed.push({
         id: `${sourceNode.id}-${targetId}`,
@@ -47,7 +49,7 @@ function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFl
         animated: true,
       });
 
-      addedPairs.add(pairKey);
+      addedLandPairs.add(pairKey);
     }
   }
 

@@ -37,7 +37,7 @@ export type DepartmentId =
   | "tacna"
   | "tumbes"
   | "ucayali";
-export type FlowMode = "land" | "sea" | "river";
+export type FlowMode = "land" | "sea" | "river" | "air";
 export type FlowImportance = "primary" | "secondary";
 export type MapViewMode = "standard" | "emphasis3d" | "flows" | "density";
 export type MapThemeDepth = "dark" | "deep-dark";

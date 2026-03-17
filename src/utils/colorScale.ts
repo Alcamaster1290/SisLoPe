@@ -47,14 +47,14 @@ export const CATEGORY_META: Record<
   { label: string; shortLabel: string; color: string; icon: string }
 > = {
   port_sea: {
-    label: "Puerto marítimo",
+    label: "Puerto maritimo",
     shortLabel: "Mar",
     color: categoryScale("port_sea"),
     icon: "PM",
   },
   port_river: {
     label: "Puerto fluvial",
-    shortLabel: "Río",
+    shortLabel: "Rio",
     color: categoryScale("port_river"),
     icon: "PF",
   },
@@ -100,7 +100,7 @@ export const MACROZONE_META: Record<Macrozone, string> = {
   north: "Norte",
   center: "Centro",
   south: "Sur",
-  amazon: "Amazonía",
+  amazon: "Amazonia",
   border: "Frontera",
 };
 
@@ -113,14 +113,16 @@ export const TERRAIN_META: Record<Terrain, string> = {
 
 export const FLOW_MODE_META: Record<FlowMode, string> = {
   land: "Terrestre",
-  sea: "Marítimo",
+  sea: "Maritimo",
   river: "Fluvial",
+  air: "Aereo",
 };
 
 const FLOW_COLOR_RGB: Record<FlowMode, RgbColor> = {
   land: [209, 158, 92],
   sea: [96, 138, 224],
   river: [96, 197, 210],
+  air: [168, 126, 214],
 };
 
 export function hexToRgb(hex: string): RgbColor {
@@ -156,6 +158,7 @@ export function getFlowStrokeWidth(importance: FlowImportance): number {
 }
 
 export function getFlowDashArray(mode: FlowMode): [number, number] {
+  if (mode === "air") return [2, 3];
   if (mode === "sea") return [4, 2];
   if (mode === "river") return [2, 2];
   return [7, 3];
@@ -164,3 +167,4 @@ export function getFlowDashArray(mode: FlowMode): [number, number] {
 export function getNodeWeight(node: Pick<LogisticsNode, "strategicLevel">): number {
   return strategicWeightScale(strategicIndex[node.strategicLevel]);
 }
+

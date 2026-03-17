@@ -96,7 +96,7 @@ export function MapLegend({
               Estilo de corredores
             </div>
             <div className="mt-3 space-y-2">
-              {(["land", "sea", "river"] as const).map((mode) => (
+              {(["land", "sea", "river", "air"] as const).map((mode) => (
                 <div key={mode} className="flex items-center gap-3">
                   <span
                     className="h-[2px] w-10 rounded-full"
@@ -106,7 +106,9 @@ export function MapLegend({
                           ? "linear-gradient(90deg, rgba(209,158,92,0.15), rgba(209,158,92,0.92))"
                           : mode === "sea"
                             ? "linear-gradient(90deg, rgba(96,138,224,0.15), rgba(96,138,224,0.92))"
-                            : "linear-gradient(90deg, rgba(96,197,210,0.15), rgba(96,197,210,0.92))",
+                            : mode === "river"
+                              ? "linear-gradient(90deg, rgba(96,197,210,0.15), rgba(96,197,210,0.92))"
+                              : "linear-gradient(90deg, rgba(168,126,214,0.15), rgba(168,126,214,0.92))",
                     }}
                   />
                   <span className="text-sm text-[var(--text-main)]">{FLOW_MODE_META[mode]}</span>
