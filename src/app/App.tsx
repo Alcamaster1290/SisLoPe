@@ -338,7 +338,7 @@ export function App() {
       <main
         className={`relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:h-[calc(100vh-11rem)] ${
           isMapExpanded
-            ? "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)]"
+            ? "lg:h-auto lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)] lg:items-start"
             : "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)_minmax(20rem,24rem)]"
         }`}
       >
@@ -355,27 +355,56 @@ export function App() {
           onResetAllFilters={resetFiltersAndView}
         />
 
-        <section className="order-1 h-[68vh] min-h-[32rem] overflow-hidden rounded-[30px] lg:order-2 lg:h-full lg:min-h-0">
-          <div className="panel-shell-strong relative h-full overflow-hidden rounded-[30px]">
-            <LogisticsMap
-              nodes={filteredNodes}
-              flows={filteredFlows}
-              nodeMap={nodeMap}
-              isDesktop={isDesktop}
-              isMapExpanded={isMapExpanded}
-              onToggleMapExpanded={handleToggleMapExpanded}
-              onSelectDepartment={focusDepartment}
-            />
-            <div className="absolute bottom-4 left-4 z-20">
-              <MapLegend
-                visibleNodes={filteredNodes}
-                availableCategories={availableCategories}
-                categoryTotals={categoryTotals}
-                activeCategories={activeCategories}
-                onToggleCategory={handleLegendToggleCategory}
-                onClearCategories={clearCategoryFilters}
+        <section
+          className={`order-1 rounded-[30px] lg:order-2 ${
+            isMapExpanded ? "overflow-visible" : "h-[68vh] min-h-[32rem] overflow-hidden lg:h-full lg:min-h-0"
+          }`}
+        >
+          <div className={`grid gap-4 ${isMapExpanded ? "min-h-0" : "h-full"}`}>
+            <div
+              className={`panel-shell-strong relative overflow-hidden rounded-[30px] ${
+                isMapExpanded ? "h-[68vh] min-h-[32rem] lg:h-[calc(100vh-13.5rem)]" : "h-full"
+              }`}
+            >
+              <LogisticsMap
+                nodes={filteredNodes}
+                flows={filteredFlows}
+                nodeMap={nodeMap}
+                isDesktop={isDesktop}
+                isMapExpanded={isMapExpanded}
+                onToggleMapExpanded={handleToggleMapExpanded}
+                onSelectDepartment={focusDepartment}
               />
+              <div className="absolute bottom-4 left-4 z-20">
+                <MapLegend
+                  visibleNodes={filteredNodes}
+                  availableCategories={availableCategories}
+                  categoryTotals={categoryTotals}
+                  activeCategories={activeCategories}
+                  onToggleCategory={handleLegendToggleCategory}
+                  onClearCategories={clearCategoryFilters}
+                />
+              </div>
             </div>
+
+            {isMapExpanded ? (
+              <Suspense
+                fallback={
+                  <aside className="panel-shell min-h-[18rem] rounded-[28px] px-5 py-5">
+                    <div className="font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+                      Cargando panel
+                    </div>
+                  </aside>
+                }
+              >
+                <LazySidePanel
+                  node={selectedNode}
+                  connections={connectedNodes}
+                  onFocusNode={focusNode}
+                  onClose={closeNodeDetails}
+                />
+              </Suspense>
+            ) : null}
           </div>
         </section>
 

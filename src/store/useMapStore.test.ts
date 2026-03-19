@@ -58,6 +58,7 @@ describe("useMapStore", () => {
     const state = useMapStore.getState();
 
     expect(state.mapStatus).toBe("loading");
+    expect(state.isMapExpanded).toBe(true);
     expect(state.renderHealth).toEqual({
       maplibre: false,
       deck: false,

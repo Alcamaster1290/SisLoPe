@@ -128,7 +128,7 @@ export function createInitialMapState(): Pick<
     showLabels: true,
     showFlows: true,
     showCorridors: true,
-    isMapExpanded: false,
+    isMapExpanded: true,
     hoveredNodeId: null,
     selectedNodeId: null,
     camera: INITIAL_CAMERA_STATE,
@@ -165,9 +165,13 @@ export const useMapStore = create<MapStoreState>((set) => ({
       ...pausePresentationOnUserAction(state),
     })),
   setHoveredDepartment: (department) =>
-    set(() => ({
-      hoveredDepartment: department,
-    })),
+    set((state) =>
+      state.hoveredDepartment === department
+        ? state
+        : {
+            hoveredDepartment: department,
+          },
+    ),
   toggleCategory: (category) =>
     set((state) => {
       const categories = state.filters.categories.includes(category)
@@ -251,7 +255,14 @@ export const useMapStore = create<MapStoreState>((set) => ({
       isMapExpanded: !state.isMapExpanded,
       ...pausePresentationOnUserAction(state),
     })),
-  setHoveredNode: (nodeId) => set(() => ({ hoveredNodeId: nodeId })),
+  setHoveredNode: (nodeId) =>
+    set((state) =>
+      state.hoveredNodeId === nodeId
+        ? state
+        : {
+            hoveredNodeId: nodeId,
+          },
+    ),
   selectNode: (nodeId, origin = "user") =>
     set((state) => ({
       selectedNodeId: nodeId,

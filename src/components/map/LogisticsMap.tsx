@@ -359,6 +359,8 @@ export function LogisticsMap({
   const onSelectDepartmentRef = useRef(onSelectDepartment);
   const nodeMapRef = useRef(nodeMap);
   const isDesktopRef = useRef(isDesktop);
+  const hoverFrameRef = useRef<number | null>(null);
+  const interactionLockedRef = useRef(false);
   const [clustersActive, setClustersActive] = useState(INITIAL_CAMERA_STATE.zoom < CLUSTER_THRESHOLD);
   const [animationTime, setAnimationTime] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -535,9 +537,7 @@ export function LogisticsMap({
   const clearHoveredState = useCallback(
     (map?: maplibregl.Map | null) => {
       setHoveredNode(null);
-      if (isMapExpanded && selectedNodeId) {
-        setTooltip(projectTooltipForNodeId(selectedNodeId, map));
-      } else {
+      if (!isMapExpanded || !selectedNodeId) {
         setTooltip(null);
       }
       if (map) {
@@ -555,7 +555,6 @@ export function LogisticsMap({
       }
 
       setHoveredNode(info.object.id);
-      setTooltip(projectTooltipForNodeId(info.object.id, map) ?? null);
 
       if (map) {
         map.getCanvas().style.cursor = "pointer";
@@ -571,7 +570,7 @@ export function LogisticsMap({
       const info = deckRef.current.pickObject({
         x,
         y,
-        radius: 10,
+        radius: 6,
         layerIds: [PICKABLE_NODE_LAYER_ID],
       }) as PickingInfo<LogisticsNode>;
 
@@ -660,26 +659,8 @@ export function LogisticsMap({
     const map = mapRef.current;
     if (!map) return;
 
-    if (isMapExpanded && selectedNodeId) {
+    if (isMapExpanded && selectedNodeId && tooltip?.nodeId === selectedNodeId) {
       const projected = projectTooltipForNodeId(selectedNodeId, map);
-      if (projected) {
-        setTooltip((current) => {
-          if (
-            current &&
-            current.nodeId === projected.nodeId &&
-            Math.abs(current.x - projected.x) < 0.5 &&
-            Math.abs(current.y - projected.y) < 0.5
-          ) {
-            return current;
-          }
-          return projected;
-        });
-      }
-      return;
-    }
-
-    if (tooltip?.nodeId && hoveredNodeId === tooltip.nodeId) {
-      const projected = projectTooltipForNodeId(tooltip.nodeId, map);
       if (projected) {
         setTooltip((current) => {
           if (
@@ -700,7 +681,6 @@ export function LogisticsMap({
       setTooltip(null);
     }
   }, [
-    hoveredNodeId,
     isMapExpanded,
     projectTooltipForNodeId,
     selectedNodeId,
@@ -891,44 +871,49 @@ export function LogisticsMap({
 
     map.on("move", syncCameraState);
     map.on("resize", syncCameraState);
+    map.on("movestart", () => {
+      interactionLockedRef.current = true;
+      clearHoveredState(map);
+    });
+    map.on("moveend", () => {
+      interactionLockedRef.current = false;
+      map.getCanvas().style.cursor = "grab";
+    });
     map.on("dragstart", () => {
+      interactionLockedRef.current = true;
       useMapStore.getState().pausePresentation();
       map.getCanvas().style.cursor = "grabbing";
     });
     map.on("dragend", () => {
+      interactionLockedRef.current = false;
       map.getCanvas().style.cursor = "grab";
     });
     map.on("mousemove", (event) => {
-      const picked = pickNodeAtPoint(event.point.x, event.point.y);
-      if (!picked) {
-        clearHoveredState(map);
+      if (map.isMoving() || interactionLockedRef.current) {
         return;
       }
-      applyPickedNode(picked, map);
+
+      if (hoverFrameRef.current !== null) {
+        window.cancelAnimationFrame(hoverFrameRef.current);
+      }
+
+      hoverFrameRef.current = window.requestAnimationFrame(() => {
+        hoverFrameRef.current = null;
+
+        const picked = pickNodeAtPoint(event.point.x, event.point.y);
+        if (!picked) {
+          clearHoveredState(map);
+          return;
+        }
+        applyPickedNode(picked, map);
+      });
     });
     map.on("mouseleave", () => {
+      if (hoverFrameRef.current !== null) {
+        window.cancelAnimationFrame(hoverFrameRef.current);
+        hoverFrameRef.current = null;
+      }
       clearHoveredState(map);
-    });
-    map.on("mouseenter", NODE_CIRCLE_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-    map.on("mouseleave", NODE_CIRCLE_LAYER_ID, () => {
-      clearHoveredState(map);
-    });
-    map.on("mousemove", NODE_CIRCLE_LAYER_ID, (event) => {
-      const feature = event.features?.[0];
-      const nodeId = feature?.properties?.id;
-      if (typeof nodeId !== "string") return;
-      const node = nodeMapRef.current.get(nodeId);
-      if (!node) return;
-
-      setHoveredNode(nodeId);
-      setTooltip({
-        nodeId,
-        x: event.point.x,
-        y: event.point.y,
-      });
-      map.getCanvas().style.cursor = "pointer";
     });
 
     map.on("click", CLUSTER_LAYER_ID, (event) => {
@@ -1038,6 +1023,10 @@ export function LogisticsMap({
     });
 
     return () => {
+      if (hoverFrameRef.current !== null) {
+        window.cancelAnimationFrame(hoverFrameRef.current);
+        hoverFrameRef.current = null;
+      }
       window.clearTimeout(readyTimeout);
       for (const timeoutId of delayedResizeIds) {
         window.clearTimeout(timeoutId);

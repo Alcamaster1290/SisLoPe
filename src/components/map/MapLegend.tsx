@@ -50,16 +50,16 @@ export function MapLegend({
   );
 
   return (
-    <div className="panel-shell pointer-events-auto max-w-[19rem] rounded-[24px] px-4 py-4 shadow-[var(--shadow-soft)]">
+    <div className="panel-shell pointer-events-auto max-w-[11.5rem] rounded-[18px] px-2.5 py-2.5 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between gap-3">
-        <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.26em] text-[var(--text-soft)]">
+        <div className="font-['Rajdhani'] text-[9px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
           Leyenda operativa
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setMinimized((state) => !state)}
-            className="control-pill rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            className="control-pill rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em]"
             title={minimized ? "Expandir leyenda" : "Minimizar leyenda"}
             aria-label={minimized ? "Expandir leyenda" : "Minimizar leyenda"}
           >
@@ -69,7 +69,7 @@ export function MapLegend({
             type="button"
             onClick={onClearCategories}
             disabled={activeCategories.length === 0}
-            className="control-pill rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-55"
+            className="control-pill rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-55"
           >
             Limpiar
           </button>
@@ -77,12 +77,12 @@ export function MapLegend({
       </div>
 
       {minimized ? (
-        <div className="mt-3 rounded-xl border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-2 text-xs text-[var(--text-soft)]">
+        <div className="mt-2 rounded-lg border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-2 py-1.5 text-[10px] text-[var(--text-soft)]">
           {visibleNodes.length} nodos visibles
         </div>
       ) : (
         <>
-          <div className="mt-4 space-y-2">
+          <div className="mt-2.5 space-y-1.5">
             {categoriesToRender.map((category) => {
               const meta = CATEGORY_META[category];
               const active = !hasCategoryFilter || activeCategories.includes(category);
@@ -92,13 +92,15 @@ export function MapLegend({
                   type="button"
                   onClick={() => onToggleCategory(category)}
                   data-active={active}
-                  className="control-pill flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left"
+                  className="control-pill flex w-full items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: meta.color }} />
-                    <span className="text-sm text-[var(--text-main)]">{meta.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: meta.color }} />
+                    <span className="text-[11px] leading-4 text-[var(--text-main)]">
+                      {meta.label}
+                    </span>
                   </div>
-                  <span className="font-['Rajdhani'] text-lg font-semibold text-[var(--text-strong)]">
+                  <span className="font-['Rajdhani'] text-sm font-semibold text-[var(--text-strong)]">
                     {visibleCounts[category]}
                   </span>
                 </button>
@@ -106,18 +108,18 @@ export function MapLegend({
             })}
           </div>
 
-          <div className="mt-4 border-t border-[var(--surface-border)] pt-4">
-            <p className="mb-2 text-[11px] text-[var(--text-soft)]">
+          <div className="mt-2.5 border-t border-[var(--surface-border)] pt-2.5">
+            <p className="mb-1.5 text-[9px] leading-4 text-[var(--text-soft)]">
               Sin seleccion activa se muestran todas las categorias disponibles.
             </p>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+            <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]">
               Tipos de corredor
             </div>
-            <div className="mt-3 space-y-2">
+            <div className="mt-2 space-y-1.5">
               {(["land", "sea", "river", "air"] as const).map((mode) => (
                 <div key={mode} className="flex items-center gap-3">
                   <span
-                    className="h-[2px] w-10 rounded-full"
+                    className="h-[2px] w-6 rounded-full"
                     style={{
                       background:
                         mode === "land"
@@ -125,11 +127,13 @@ export function MapLegend({
                           : mode === "sea"
                             ? "linear-gradient(90deg, rgba(96,138,224,0.15), rgba(96,138,224,0.92))"
                             : mode === "river"
-                              ? "linear-gradient(90deg, rgba(96,197,210,0.15), rgba(96,197,210,0.92))"
-                              : "linear-gradient(90deg, rgba(168,126,214,0.15), rgba(168,126,214,0.92))",
+                            ? "linear-gradient(90deg, rgba(96,197,210,0.15), rgba(96,197,210,0.92))"
+                            : "linear-gradient(90deg, rgba(168,126,214,0.15), rgba(168,126,214,0.92))",
                     }}
                   />
-                  <span className="text-sm text-[var(--text-main)]">{FLOW_MODE_META[mode]}</span>
+                  <span className="text-[10px] leading-4 text-[var(--text-main)]">
+                    {FLOW_MODE_META[mode]}
+                  </span>
                 </div>
               ))}
             </div>
