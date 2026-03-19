@@ -10,7 +10,6 @@ interface TopBarProps {
   showLabels: boolean;
   showFlows: boolean;
   showCorridors: boolean;
-  isMapExpanded: boolean;
   exportPending: boolean;
   presentation: PresentationState;
   onViewModeChange: (mode: MapViewMode) => void;
@@ -18,7 +17,6 @@ interface TopBarProps {
   onToggleLabels: () => void;
   onToggleFlows: () => void;
   onToggleCorridors: () => void;
-  onToggleMapExpanded: () => void;
   onResetCamera: () => void;
   onExport: () => void;
   onStartPresentation: () => void;
@@ -66,7 +64,6 @@ export function TopBar({
   showLabels,
   showFlows,
   showCorridors,
-  isMapExpanded,
   exportPending,
   presentation,
   onViewModeChange,
@@ -74,7 +71,6 @@ export function TopBar({
   onToggleLabels,
   onToggleFlows,
   onToggleCorridors,
-  onToggleMapExpanded,
   onResetCamera,
   onExport,
   onStartPresentation,
@@ -156,9 +152,6 @@ export function TopBar({
                 onClick={onToggleCorridors}
               >
                 Corredores
-              </ControlButton>
-              <ControlButton active={isMapExpanded} onClick={onToggleMapExpanded}>
-                {isMapExpanded ? "Restaurar panel" : "Expandir mapa"}
               </ControlButton>
               <ControlButton onClick={onResetCamera}>Reiniciar camara</ControlButton>
               <ControlButton disabled={exportPending} onClick={onExport}>

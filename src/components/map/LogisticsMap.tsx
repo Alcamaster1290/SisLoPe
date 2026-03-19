@@ -6,8 +6,14 @@ import { getDepartmentForNode } from "@/data/departments";
 import { departmentRegions } from "@/data/departmentRegions";
 import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
+import { MapControlStack } from "@/components/map/MapControlStack";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
+import {
+  buildMapRenderSyncState,
+  resizeMapIfNeeded,
+  scheduleMapLayoutResync,
+} from "@/components/map/mapLayoutSync";
 import { createFlowLayers } from "@/layers/createFlowLayers";
 import { createNodeLayers } from "@/layers/createNodeLayers";
 import { getMapStyle } from "@/lib/mapStyle";
@@ -55,6 +61,8 @@ interface LogisticsMapProps {
   flows: LogisticsFlow[];
   nodeMap: Map<string, LogisticsNode>;
   isDesktop: boolean;
+  isMapExpanded: boolean;
+  onToggleMapExpanded: () => void;
   onSelectDepartment: (departmentId: DepartmentId | null) => void;
 }
 
@@ -312,22 +320,6 @@ function getDepartmentIdFromFeature(feature?: GeoJSON.Feature): DepartmentId | n
   return typeof raw === "string" ? (raw as DepartmentId) : null;
 }
 
-function buildSyncState(map: maplibregl.Map): MapRenderSyncState {
-  const center = map.getCenter();
-  const container = map.getContainer();
-  const canvas = map.getCanvas();
-
-  return {
-    longitude: center.lng,
-    latitude: center.lat,
-    zoom: map.getZoom(),
-    pitch: map.getPitch(),
-    bearing: map.getBearing(),
-    width: Math.max(1, container.clientWidth || canvas.clientWidth),
-    height: Math.max(1, container.clientHeight || canvas.clientHeight),
-  };
-}
-
 function getOperationalStatus(renderHealth: RenderHealth): MapStatus {
   if (!renderHealth.maplibre) return "failed";
   if (!renderHealth.deck) return "degraded";
@@ -355,6 +347,8 @@ export function LogisticsMap({
   flows,
   nodeMap,
   isDesktop,
+  isMapExpanded,
+  onToggleMapExpanded,
   onSelectDepartment,
 }: LogisticsMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -699,7 +693,7 @@ export function LogisticsMap({
     map.getCanvas().style.cursor = "grab";
 
     const syncCameraState = () => {
-      const sync = buildSyncState(map);
+      const sync = buildMapRenderSyncState(map);
       const clustersVisible = sync.zoom < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
       const nodeFallbackVisible = !clustersVisible && effectiveViewModeRef.current !== "density";
 
@@ -718,15 +712,7 @@ export function LogisticsMap({
 
     // Layout changes after mount (panels, fonts, animations) can leave MapLibre with a stale canvas size.
     const forceResize = () => {
-      const container = map.getContainer();
-      const canvas = map.getCanvas();
-      const widthMismatch = Math.abs(container.clientWidth - canvas.clientWidth) > 1;
-      const heightMismatch = Math.abs(container.clientHeight - canvas.clientHeight) > 1;
-
-      if (widthMismatch || heightMismatch) {
-        map.resize();
-      }
-
+      resizeMapIfNeeded(map);
       syncCameraState();
     };
 
@@ -1125,6 +1111,31 @@ export function LogisticsMap({
     });
   }, [cameraCommand, cameraCommand?.nonce, effectiveViewMode, isDesktop, nodeMap]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    return scheduleMapLayoutResync({
+      map,
+      onSync: (sync) => {
+        const clustersVisible = sync.zoom < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
+        const nodeFallbackVisible = !clustersVisible && effectiveViewModeRef.current !== "density";
+
+        setClustersActive(clustersVisible);
+        syncClusterVisibility(map, clustersVisible);
+        syncNodeVisibility(map, nodeFallbackVisible);
+        setSyncState(sync);
+        setCamera({
+          longitude: sync.longitude,
+          latitude: sync.latitude,
+          zoom: sync.zoom,
+          pitch: sync.pitch,
+          bearing: sync.bearing,
+        });
+      },
+    });
+  }, [isMapExpanded, setCamera]);
+
   const handleDeckReady = useCallback((deck: Deck<MapView[]> | null) => {
     deckRef.current = deck;
   }, []);
@@ -1203,31 +1214,13 @@ export function LogisticsMap({
           </p>
         </div>
       ) : null}
-      <div className="absolute right-5 top-5 z-20 flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={handleZoomIn}
-          className="control-pill flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-semibold"
-          aria-label="Acercar mapa"
-        >
-          +
-        </button>
-        <button
-          type="button"
-          onClick={handleZoomOut}
-          className="control-pill flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-semibold"
-          aria-label="Alejar mapa"
-        >
-          -
-        </button>
-        <button
-          type="button"
-          onClick={handleResetView}
-          className="control-pill min-h-11 rounded-2xl px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
-        >
-          Peru
-        </button>
-      </div>
+      <MapControlStack
+        isMapExpanded={isMapExpanded}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetView={handleResetView}
+        onToggleMapExpanded={onToggleMapExpanded}
+      />
       <RenderStatusOverlay mapStatus={mapStatus} renderHealth={renderHealth} onRetry={handleRetry} />
       <NodeTooltip node={hoveredNode} tooltip={tooltip} />
     </div>

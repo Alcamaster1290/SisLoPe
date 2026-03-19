@@ -60,8 +60,10 @@ export function MapLegend({
             type="button"
             onClick={() => setMinimized((state) => !state)}
             className="control-pill rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            title={minimized ? "Expandir leyenda" : "Minimizar leyenda"}
+            aria-label={minimized ? "Expandir leyenda" : "Minimizar leyenda"}
           >
-            {minimized ? "Expandir" : "Minimizar"}
+            {minimized ? "+" : "_"}
           </button>
           <button
             type="button"

@@ -316,7 +316,6 @@ export function App() {
         showLabels={showLabels}
         showFlows={showFlows}
         showCorridors={showCorridors}
-        isMapExpanded={isMapExpanded}
         exportPending={exportPending}
         presentation={presentation}
         onViewModeChange={setViewMode}
@@ -324,7 +323,6 @@ export function App() {
         onToggleLabels={toggleLabels}
         onToggleFlows={toggleFlows}
         onToggleCorridors={toggleCorridors}
-        onToggleMapExpanded={handleToggleMapExpanded}
         onResetCamera={resetCamera}
         onExport={exportCurrentView}
         onStartPresentation={startPresentation}
@@ -360,6 +358,8 @@ export function App() {
               flows={filteredFlows}
               nodeMap={nodeMap}
               isDesktop={isDesktop}
+              isMapExpanded={isMapExpanded}
+              onToggleMapExpanded={handleToggleMapExpanded}
               onSelectDepartment={focusDepartment}
             />
             <div className="absolute bottom-4 left-4 z-20">
