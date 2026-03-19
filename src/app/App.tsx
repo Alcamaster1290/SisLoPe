@@ -290,20 +290,24 @@ export function App() {
   const handleToggleMapExpanded = useCallback(() => {
     const nextExpanded = !isMapExpanded;
     toggleMapExpanded();
-    const currentCamera = useMapStore.getState().camera;
-    requestCameraCommand(
-      {
-        kind: "focus",
-        longitude: currentCamera.longitude,
-        latitude: currentCamera.latitude,
-        zoom: currentCamera.zoom,
-        pitch: currentCamera.pitch,
-        bearing: currentCamera.bearing,
-        duration: 700,
-        padding: getCameraPadding(nextExpanded),
-      },
-      "user",
-    );
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const currentCamera = useMapStore.getState().camera;
+        requestCameraCommand(
+          {
+            kind: "focus",
+            longitude: currentCamera.longitude,
+            latitude: currentCamera.latitude,
+            zoom: currentCamera.zoom,
+            pitch: currentCamera.pitch,
+            bearing: currentCamera.bearing,
+            duration: 700,
+            padding: getCameraPadding(nextExpanded),
+          },
+          "user",
+        );
+      });
+    });
   }, [getCameraPadding, isMapExpanded, requestCameraCommand, toggleMapExpanded]);
 
   return (

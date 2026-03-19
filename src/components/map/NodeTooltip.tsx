@@ -5,9 +5,10 @@ import { formatCategory, formatCoordinate, formatStrategicLevel } from "@/utils/
 interface NodeTooltipProps {
   node: LogisticsNode | null;
   tooltip: TooltipState | null;
+  onClose: () => void;
 }
 
-export function NodeTooltip({ node, tooltip }: NodeTooltipProps) {
+export function NodeTooltip({ node, tooltip, onClose }: NodeTooltipProps) {
   return (
     <AnimatePresence>
       {node && tooltip ? (
@@ -16,14 +17,25 @@ export function NodeTooltip({ node, tooltip }: NodeTooltipProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.18 }}
-          className="pointer-events-none absolute z-30 w-[18rem] rounded-[20px] border border-[var(--surface-border-strong)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-elevated)]"
+          className="absolute z-30 w-[18rem] rounded-[20px] border border-[var(--surface-border-strong)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-elevated)]"
           style={{
             left: tooltip.x + 18,
             top: tooltip.y + 18,
           }}
         >
-          <div className="font-['Rajdhani'] text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
-            {node.name}
+          <div className="flex items-start justify-between gap-3">
+            <div className="font-['Rajdhani'] text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
+              {node.name}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar popup del nodo"
+              title="Cerrar"
+              className="control-pill flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold uppercase tracking-[0.14em]"
+            >
+              X
+            </button>
           </div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--text-soft)]">
             {formatCategory(node.category)} / {formatStrategicLevel(node.strategicLevel)}

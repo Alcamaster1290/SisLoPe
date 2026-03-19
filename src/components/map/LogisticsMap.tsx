@@ -9,6 +9,7 @@ import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { MapControlStack } from "@/components/map/MapControlStack";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
+import { projectTooltipFromNode } from "@/components/map/mapTooltipPosition";
 import {
   buildMapRenderSyncState,
   resizeMapIfNeeded,
@@ -387,7 +388,7 @@ export function LogisticsMap({
   const flowFeatures = useMemo(() => flowsToFeatureCollection(flows, nodeMap).features, [flows, nodeMap]);
   const nodeFeaturesRef = useRef(nodeFeatures);
   const clustersActiveRef = useRef(clustersActive);
-  const hoveredNode = tooltip ? nodeMap.get(tooltip.nodeId) ?? null : null;
+  const activeTooltipNode = tooltip ? nodeMap.get(tooltip.nodeId) ?? null : null;
   const effectiveViewMode = viewMode;
   const mapZoom = syncState?.zoom ?? INITIAL_CAMERA_STATE.zoom;
   const departmentFocused = Boolean(focusedDepartment);
@@ -518,15 +519,32 @@ export function LogisticsMap({
     return placedLabels;
   }, [clustersActive, focusedDepartment, hoveredNodeId, mapZoom, nodes, selectedNodeId, syncState]);
 
+  const projectTooltipForNodeId = useCallback(
+    (nodeId: string, map?: maplibregl.Map | null): TooltipState | null => {
+      const targetMap = map ?? mapRef.current;
+      if (!targetMap) return null;
+
+      const node = nodeMapRef.current.get(nodeId);
+      if (!node) return null;
+
+      return projectTooltipFromNode(targetMap, node);
+    },
+    [],
+  );
+
   const clearHoveredState = useCallback(
     (map?: maplibregl.Map | null) => {
       setHoveredNode(null);
-      setTooltip(null);
+      if (isMapExpanded && selectedNodeId) {
+        setTooltip(projectTooltipForNodeId(selectedNodeId, map));
+      } else {
+        setTooltip(null);
+      }
       if (map) {
         map.getCanvas().style.cursor = "grab";
       }
     },
-    [setHoveredNode],
+    [isMapExpanded, projectTooltipForNodeId, selectedNodeId, setHoveredNode],
   );
 
   const applyPickedNode = useCallback(
@@ -537,11 +555,7 @@ export function LogisticsMap({
       }
 
       setHoveredNode(info.object.id);
-      setTooltip({
-        nodeId: info.object.id,
-        x: info.x,
-        y: info.y,
-      });
+      setTooltip(projectTooltipForNodeId(info.object.id, map) ?? null);
 
       if (map) {
         map.getCanvas().style.cursor = "pointer";
@@ -641,6 +655,58 @@ export function LogisticsMap({
   useEffect(() => {
     isDesktopRef.current = isDesktop;
   }, [isDesktop]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (isMapExpanded && selectedNodeId) {
+      const projected = projectTooltipForNodeId(selectedNodeId, map);
+      if (projected) {
+        setTooltip((current) => {
+          if (
+            current &&
+            current.nodeId === projected.nodeId &&
+            Math.abs(current.x - projected.x) < 0.5 &&
+            Math.abs(current.y - projected.y) < 0.5
+          ) {
+            return current;
+          }
+          return projected;
+        });
+      }
+      return;
+    }
+
+    if (tooltip?.nodeId && hoveredNodeId === tooltip.nodeId) {
+      const projected = projectTooltipForNodeId(tooltip.nodeId, map);
+      if (projected) {
+        setTooltip((current) => {
+          if (
+            current &&
+            current.nodeId === projected.nodeId &&
+            Math.abs(current.x - projected.x) < 0.5 &&
+            Math.abs(current.y - projected.y) < 0.5
+          ) {
+            return current;
+          }
+          return projected;
+        });
+      }
+      return;
+    }
+
+    if (!isMapExpanded && tooltip?.nodeId === selectedNodeId) {
+      setTooltip(null);
+    }
+  }, [
+    hoveredNodeId,
+    isMapExpanded,
+    projectTooltipForNodeId,
+    selectedNodeId,
+    syncState,
+    tooltip?.nodeId,
+  ]);
 
   useEffect(() => {
     clustersActiveRef.current = clustersActive;
@@ -898,6 +964,9 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
+      if (isMapExpanded) {
+        setTooltip(projectTooltipForNodeId(nodeId, map));
+      }
       const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
       map.easeTo({
         center: [node.lon, node.lat],
@@ -919,6 +988,9 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
+      if (isMapExpanded) {
+        setTooltip(projectTooltipForNodeId(nodeId, map));
+      }
       const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
       map.easeTo({
         center: [node.lon, node.lat],
@@ -936,6 +1008,9 @@ export function LogisticsMap({
       if (!picked?.object) return;
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(picked.object.id, "user");
+      if (isMapExpanded) {
+        setTooltip(projectTooltipForNodeId(picked.object.id, map));
+      }
     });
 
     map.on("dblclick", (event) => {
@@ -957,6 +1032,9 @@ export function LogisticsMap({
         },
         "user",
       );
+      if (isMapExpanded) {
+        setTooltip(projectTooltipForNodeId(picked.object.id, map));
+      }
     });
 
     return () => {
@@ -974,7 +1052,9 @@ export function LogisticsMap({
   }, [
     applyPickedNode,
     clearHoveredState,
+    isMapExpanded,
     pickNodeAtPoint,
+    projectTooltipForNodeId,
     resetRenderPipeline,
     retryNonce,
     setCamera,
@@ -1163,6 +1243,15 @@ export function LogisticsMap({
     setRetryNonce((value) => value + 1);
   }, [clearHoveredState, resetRenderPipeline]);
 
+  const handleCloseTooltip = useCallback(() => {
+    setHoveredNode(null);
+    setTooltip(null);
+    if (tooltip?.nodeId && tooltip.nodeId === selectedNodeId) {
+      useMapStore.getState().selectNode(null, "user");
+    }
+    mapRef.current?.getCanvas().style.setProperty("cursor", "grab");
+  }, [selectedNodeId, setHoveredNode, tooltip]);
+
   const handleZoomIn = useCallback(() => {
     mapRef.current?.zoomIn({ duration: 500 });
   }, []);
@@ -1222,7 +1311,7 @@ export function LogisticsMap({
         onToggleMapExpanded={onToggleMapExpanded}
       />
       <RenderStatusOverlay mapStatus={mapStatus} renderHealth={renderHealth} onRetry={handleRetry} />
-      <NodeTooltip node={hoveredNode} tooltip={tooltip} />
+      <NodeTooltip node={activeTooltipNode} tooltip={tooltip} onClose={handleCloseTooltip} />
     </div>
   );
 }
