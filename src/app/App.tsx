@@ -336,9 +336,9 @@ export function App() {
       />
 
       <main
-        className={`relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:h-[calc(100vh-11rem)] ${
+        className={`relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:min-h-[calc(100vh-11rem)] ${
           isMapExpanded
-            ? "lg:h-auto lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)] lg:items-start"
+            ? "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)] lg:items-stretch"
             : "lg:grid-cols-[minmax(18rem,21rem)_minmax(0,1fr)_minmax(20rem,24rem)]"
         }`}
       >
@@ -357,13 +357,17 @@ export function App() {
 
         <section
           className={`order-1 rounded-[30px] lg:order-2 ${
-            isMapExpanded ? "overflow-visible" : "h-[68vh] min-h-[32rem] overflow-hidden lg:h-full lg:min-h-0"
+            isMapExpanded ? "overflow-visible lg:h-full lg:min-h-0" : "h-[68vh] min-h-[32rem] overflow-hidden lg:h-full lg:min-h-0"
           }`}
         >
-          <div className={`grid gap-4 ${isMapExpanded ? "min-h-0" : "h-full"}`}>
+          <div
+            className={`grid gap-4 ${
+              isMapExpanded ? "min-h-0 lg:h-full lg:grid-rows-[minmax(0,1fr)_auto]" : "h-full"
+            }`}
+          >
             <div
               className={`panel-shell-strong relative overflow-hidden rounded-[30px] ${
-                isMapExpanded ? "h-[76vh] min-h-[38rem] lg:h-[calc(100vh-10.75rem)]" : "h-full"
+                isMapExpanded ? "h-[72vh] min-h-[34rem] lg:h-full lg:min-h-[42rem]" : "h-full"
               }`}
             >
               <LogisticsMap

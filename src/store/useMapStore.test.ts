@@ -107,6 +107,22 @@ describe("useMapStore", () => {
     expect(useMapStore.getState().hoveredDepartment).toBeNull();
   });
 
+  it("does not churn hover state when the hovered target does not change", () => {
+    const initialState = useMapStore.getState();
+
+    initialState.setHoveredNode("callao");
+    const afterNodeHover = useMapStore.getState();
+    afterNodeHover.setHoveredNode("callao");
+
+    expect(useMapStore.getState()).toBe(afterNodeHover);
+
+    afterNodeHover.setHoveredDepartment("lima");
+    const afterDepartmentHover = useMapStore.getState();
+    afterDepartmentHover.setHoveredDepartment("lima");
+
+    expect(useMapStore.getState()).toBe(afterDepartmentHover);
+  });
+
   it("stores and clears camera snapshot before node focus", () => {
     const store = useMapStore.getState();
     const snapshot = {

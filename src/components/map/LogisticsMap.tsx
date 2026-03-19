@@ -8,6 +8,7 @@ import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { MapControlStack } from "@/components/map/MapControlStack";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
+import { shouldShowFallbackNodeLayers } from "@/components/map/nodeLayerVisibility";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
 import { projectTooltipFromNode } from "@/components/map/mapTooltipPosition";
 import {
@@ -83,6 +84,23 @@ function syncClusterVisibility(map: maplibregl.Map, visible: boolean): void {
 function syncNodeVisibility(map: maplibregl.Map, visible: boolean): void {
   setLayerVisibility(map, NODE_HALO_LAYER_ID, visible);
   setLayerVisibility(map, NODE_CIRCLE_LAYER_ID, visible);
+}
+
+function syncInteractiveNodeVisibility(
+  map: maplibregl.Map,
+  clustersVisible: boolean,
+  viewMode: MapViewMode,
+  deckHealthy: boolean,
+): void {
+  syncClusterVisibility(map, clustersVisible);
+  syncNodeVisibility(
+    map,
+    shouldShowFallbackNodeLayers({
+      clustersVisible,
+      viewMode,
+      deckHealthy,
+    }),
+  );
 }
 
 function installClusterLayers(map: maplibregl.Map, data: FeatureCollection): void {
@@ -359,6 +377,8 @@ export function LogisticsMap({
   const onSelectDepartmentRef = useRef(onSelectDepartment);
   const nodeMapRef = useRef(nodeMap);
   const isDesktopRef = useRef(isDesktop);
+  const isMapExpandedRef = useRef(isMapExpanded);
+  const selectedNodeIdRef = useRef<string | null>(useMapStore.getState().selectedNodeId);
   const hoverFrameRef = useRef<number | null>(null);
   const interactionLockedRef = useRef(false);
   const [clustersActive, setClustersActive] = useState(INITIAL_CAMERA_STATE.zoom < CLUSTER_THRESHOLD);
@@ -537,14 +557,14 @@ export function LogisticsMap({
   const clearHoveredState = useCallback(
     (map?: maplibregl.Map | null) => {
       setHoveredNode(null);
-      if (!isMapExpanded || !selectedNodeId) {
+      if (!isMapExpandedRef.current || !selectedNodeIdRef.current) {
         setTooltip(null);
       }
       if (map) {
         map.getCanvas().style.cursor = "grab";
       }
     },
-    [isMapExpanded, projectTooltipForNodeId, selectedNodeId, setHoveredNode],
+    [setHoveredNode],
   );
 
   const applyPickedNode = useCallback(
@@ -634,8 +654,7 @@ export function LogisticsMap({
     if (!map) return;
 
     const clustersVisible = map.getZoom() < CLUSTER_THRESHOLD && effectiveViewMode !== "density";
-    syncClusterVisibility(map, clustersVisible);
-    syncNodeVisibility(map, !clustersVisible && effectiveViewMode !== "density");
+    syncInteractiveNodeVisibility(map, clustersVisible, effectiveViewMode, useMapStore.getState().renderHealth.deck);
     setClustersActive(clustersVisible);
   }, [effectiveViewMode]);
 
@@ -654,6 +673,14 @@ export function LogisticsMap({
   useEffect(() => {
     isDesktopRef.current = isDesktop;
   }, [isDesktop]);
+
+  useEffect(() => {
+    isMapExpandedRef.current = isMapExpanded;
+  }, [isMapExpanded]);
+
+  useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId;
+  }, [selectedNodeId]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -741,11 +768,10 @@ export function LogisticsMap({
     const syncCameraState = () => {
       const sync = buildMapRenderSyncState(map);
       const clustersVisible = sync.zoom < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
-      const nodeFallbackVisible = !clustersVisible && effectiveViewModeRef.current !== "density";
+      const deckHealthy = useMapStore.getState().renderHealth.deck;
 
       setClustersActive(clustersVisible);
-      syncClusterVisibility(map, clustersVisible);
-      syncNodeVisibility(map, nodeFallbackVisible);
+      syncInteractiveNodeVisibility(map, clustersVisible, effectiveViewModeRef.current, deckHealthy);
       setSyncState(sync);
       setCamera({
         longitude: sync.longitude,
@@ -819,6 +845,12 @@ export function LogisticsMap({
       scheduleResize(900);
 
       map.on("mousemove", DEPARTMENT_FILL_LAYER_ID, (event) => {
+        const pickedNode = pickNodeAtPoint(event.point.x, event.point.y);
+        if (pickedNode?.object) {
+          setHoveredDepartment(null);
+          return;
+        }
+
         const departmentId = getDepartmentIdFromFeature(event.features?.[0] as GeoJSON.Feature | undefined);
         if (!departmentId) return;
 
@@ -838,7 +870,8 @@ export function LogisticsMap({
         const hasNodeOnPointer =
           activeNodeLayers.length > 0 &&
           map.queryRenderedFeatures(event.point, { layers: activeNodeLayers }).length > 0;
-        if (hasNodeOnPointer) return;
+        const pickedNode = pickNodeAtPoint(event.point.x, event.point.y);
+        if (hasNodeOnPointer || pickedNode?.object) return;
 
         const departmentId = getDepartmentIdFromFeature(event.features?.[0] as GeoJSON.Feature | undefined);
         if (!departmentId) return;
@@ -949,7 +982,7 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
-      if (isMapExpanded) {
+      if (isMapExpandedRef.current) {
         setTooltip(projectTooltipForNodeId(nodeId, map));
       }
       const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
@@ -973,7 +1006,7 @@ export function LogisticsMap({
 
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(nodeId, "user");
-      if (isMapExpanded) {
+      if (isMapExpandedRef.current) {
         setTooltip(projectTooltipForNodeId(nodeId, map));
       }
       const focus = getNodeFocusCamera(node, effectiveViewModeRef.current);
@@ -993,7 +1026,7 @@ export function LogisticsMap({
       if (!picked?.object) return;
       useMapStore.getState().rememberCameraBeforeNodeFocus(useMapStore.getState().camera);
       useMapStore.getState().selectNode(picked.object.id, "user");
-      if (isMapExpanded) {
+      if (isMapExpandedRef.current) {
         setTooltip(projectTooltipForNodeId(picked.object.id, map));
       }
     });
@@ -1017,7 +1050,7 @@ export function LogisticsMap({
         },
         "user",
       );
-      if (isMapExpanded) {
+      if (isMapExpandedRef.current) {
         setTooltip(projectTooltipForNodeId(picked.object.id, map));
       }
     });
@@ -1041,7 +1074,6 @@ export function LogisticsMap({
   }, [
     applyPickedNode,
     clearHoveredState,
-    isMapExpanded,
     pickNodeAtPoint,
     projectTooltipForNodeId,
     resetRenderPipeline,
@@ -1063,8 +1095,12 @@ export function LogisticsMap({
     source.setData(nodeFeatures as unknown as FeatureCollection);
     nodeSource?.setData(nodeFeatures as unknown as FeatureCollection);
     const clustersVisible = map.getZoom() < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
-    syncClusterVisibility(map, clustersVisible);
-    syncNodeVisibility(map, !clustersVisible && effectiveViewModeRef.current !== "density");
+    syncInteractiveNodeVisibility(
+      map,
+      clustersVisible,
+      effectiveViewModeRef.current,
+      useMapStore.getState().renderHealth.deck,
+    );
   }, [nodeFeatures]);
 
   useEffect(() => {
@@ -1188,11 +1224,10 @@ export function LogisticsMap({
       map,
       onSync: (sync) => {
         const clustersVisible = sync.zoom < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
-        const nodeFallbackVisible = !clustersVisible && effectiveViewModeRef.current !== "density";
+        const deckHealthy = useMapStore.getState().renderHealth.deck;
 
         setClustersActive(clustersVisible);
-        syncClusterVisibility(map, clustersVisible);
-        syncNodeVisibility(map, nodeFallbackVisible);
+        syncInteractiveNodeVisibility(map, clustersVisible, effectiveViewModeRef.current, deckHealthy);
         setSyncState(sync);
         setCamera({
           longitude: sync.longitude,
@@ -1212,6 +1247,12 @@ export function LogisticsMap({
   const handleDeckHealthChange = useCallback(
     (healthy: boolean) => {
       setRendererHealth("deck", healthy);
+
+      const map = mapRef.current;
+      if (map) {
+        const clustersVisible = map.getZoom() < CLUSTER_THRESHOLD && effectiveViewModeRef.current !== "density";
+        syncInteractiveNodeVisibility(map, clustersVisible, effectiveViewModeRef.current, healthy);
+      }
 
       const state = useMapStore.getState();
       const nextHealth = {
