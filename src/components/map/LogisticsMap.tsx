@@ -1271,17 +1271,6 @@ export function LogisticsMap({
         onReady={handleDeckReady}
       />
       <div className={atmosphereClass} />
-      <div className="pointer-events-none absolute left-5 top-5 z-20 max-w-[18rem] rounded-[22px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-xl">
-        <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.34em] text-[var(--text-soft)]">
-          Base geoespacial
-        </div>
-        <div className="mt-2 font-['Rajdhani'] text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
-          Peru logistico operativo
-        </div>
-        <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">
-          Silueta nacional, nodos georreferenciados y controles de navegacion visibles incluso si las capas avanzadas se degradan.
-        </p>
-      </div>
       {effectiveViewMode === "emphasis3d" ? (
         <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-lg">
           <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">

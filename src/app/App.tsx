@@ -363,7 +363,7 @@ export function App() {
           <div className={`grid gap-4 ${isMapExpanded ? "min-h-0" : "h-full"}`}>
             <div
               className={`panel-shell-strong relative overflow-hidden rounded-[30px] ${
-                isMapExpanded ? "h-[68vh] min-h-[32rem] lg:h-[calc(100vh-13.5rem)]" : "h-full"
+                isMapExpanded ? "h-[76vh] min-h-[38rem] lg:h-[calc(100vh-10.75rem)]" : "h-full"
               }`}
             >
               <LogisticsMap
