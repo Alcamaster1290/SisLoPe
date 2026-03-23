@@ -10,6 +10,7 @@ function createMapStub(overrides?: {
   containerHeight?: number;
   canvasWidth?: number;
   canvasHeight?: number;
+  padding?: Partial<{ top: number; right: number; bottom: number; left: number }>;
 }) {
   const resize = vi.fn();
 
@@ -18,6 +19,12 @@ function createMapStub(overrides?: {
     getZoom: () => 5.4,
     getPitch: () => 24,
     getBearing: () => 0,
+    getPadding: () => ({
+      top: overrides?.padding?.top ?? 92,
+      right: overrides?.padding?.right ?? 104,
+      bottom: overrides?.padding?.bottom ?? 92,
+      left: overrides?.padding?.left ?? 104,
+    }),
     getContainer: () =>
       ({
         clientWidth: overrides?.containerWidth ?? 1280,
@@ -52,6 +59,12 @@ describe("mapLayoutSync", () => {
 
     expect(buildMapRenderSyncState(map).width).toBe(1400);
     expect(buildMapRenderSyncState(map).height).toBe(860);
+    expect(buildMapRenderSyncState(map).padding).toEqual({
+      top: 92,
+      right: 104,
+      bottom: 92,
+      left: 104,
+    });
   });
 
   it("redimensiona el mapa cuando el canvas queda desfasado", () => {
@@ -75,6 +88,12 @@ describe("mapLayoutSync", () => {
       expect.objectContaining({
         width: 1280,
         height: 720,
+        padding: {
+          top: 92,
+          right: 104,
+          bottom: 92,
+          left: 104,
+        },
       }),
     );
 

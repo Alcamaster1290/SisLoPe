@@ -444,6 +444,7 @@ export function LogisticsMap({
       zoom: syncState.zoom,
       pitch: syncState.pitch,
       bearing: syncState.bearing,
+      padding: syncState.padding,
     });
 
     const isPort = (node: LogisticsNode): boolean =>

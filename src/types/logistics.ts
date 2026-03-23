@@ -95,6 +95,7 @@ export interface MapCameraState {
 export interface MapRenderSyncState extends MapCameraState {
   width: number;
   height: number;
+  padding: CameraPadding;
 }
 
 export interface RenderHealth {

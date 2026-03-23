@@ -1,4 +1,4 @@
-import type { MapRenderSyncState } from "@/types/logistics";
+import type { CameraPadding, MapRenderSyncState } from "@/types/logistics";
 
 export const EXPANSION_RESYNC_DELAYS_MS = [0, 120, 320, 700] as const;
 
@@ -10,6 +10,22 @@ export interface MapLike {
   getContainer: () => HTMLElement;
   getCanvas: () => HTMLCanvasElement;
   resize: () => void;
+}
+
+function getMapPadding(map: MapLike): CameraPadding {
+  const candidate = map as MapLike & {
+    getPadding?: () => Partial<CameraPadding>;
+    padding?: Partial<CameraPadding>;
+  };
+
+  const resolved = candidate.getPadding?.() ?? candidate.padding ?? {};
+
+  return {
+    top: resolved.top ?? 0,
+    right: resolved.right ?? 0,
+    bottom: resolved.bottom ?? 0,
+    left: resolved.left ?? 0,
+  };
 }
 
 export function buildMapRenderSyncState(map: MapLike): MapRenderSyncState {
@@ -25,6 +41,7 @@ export function buildMapRenderSyncState(map: MapLike): MapRenderSyncState {
     bearing: map.getBearing(),
     width: Math.max(1, container.clientWidth || canvas.clientWidth),
     height: Math.max(1, container.clientHeight || canvas.clientHeight),
+    padding: getMapPadding(map),
   };
 }
 

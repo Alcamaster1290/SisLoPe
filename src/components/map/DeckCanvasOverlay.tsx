@@ -10,7 +10,6 @@ interface DeckCanvasOverlayProps {
 }
 
 const MAP_VIEW_ID = "logistics-map-view";
-const MAP_VIEW = new MapView({ id: MAP_VIEW_ID, repeat: false });
 
 export function DeckCanvasOverlay({
   syncState,
@@ -28,7 +27,7 @@ export function DeckCanvasOverlay({
       const deck = new Deck({
         parent: containerRef.current,
         controller: false,
-        views: [MAP_VIEW],
+        views: [new MapView({ id: MAP_VIEW_ID, repeat: false })],
         layers: [],
         useDevicePixels: Math.min(window.devicePixelRatio || 1, 2),
       }) as Deck<MapView[]>;
@@ -57,6 +56,13 @@ export function DeckCanvasOverlay({
       deck.setProps({
         width: syncState.width,
         height: syncState.height,
+        views: [
+          new MapView({
+            id: MAP_VIEW_ID,
+            repeat: false,
+            padding: syncState.padding,
+          }),
+        ],
         viewState: {
           [MAP_VIEW_ID]: {
             longitude: syncState.longitude,
