@@ -7,6 +7,7 @@ import { departmentRegions } from "@/data/departmentRegions";
 import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { MapControlStack } from "@/components/map/MapControlStack";
+import { buildNodeFocusCommand, shouldShowHoverTooltip } from "@/components/map/nodeInteractionState";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { shouldShowFallbackNodeLayers } from "@/components/map/nodeLayerVisibility";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
@@ -593,9 +594,15 @@ export function LogisticsMap({
 
       if (map) {
         map.getCanvas().style.cursor = "pointer";
+        if (shouldShowHoverTooltip(selectedNodeIdRef.current, isMapExpandedRef.current)) {
+          const projected = projectTooltipForNodeId(info.object.id, map);
+          if (projected) {
+            setTooltip(projected);
+          }
+        }
       }
     },
-    [clearHoveredState, setHoveredNode],
+    [clearHoveredState, projectTooltipForNodeId, setHoveredNode],
   );
 
   const pickNodeAtPoint = useCallback(
@@ -1059,6 +1066,14 @@ export function LogisticsMap({
       if (isMapExpandedRef.current) {
         setTooltip(projectTooltipForNodeId(picked.object.id, map));
       }
+      useMapStore.getState().requestCameraCommand(
+        buildNodeFocusCommand(
+          picked.object,
+          effectiveViewModeRef.current,
+          isDesktopRef.current,
+        ),
+        "user",
+      );
     });
 
     map.on("dblclick", (event) => {
