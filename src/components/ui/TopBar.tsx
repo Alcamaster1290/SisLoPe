@@ -10,6 +10,8 @@ interface TopBarProps {
   showLabels: boolean;
   showFlows: boolean;
   showCorridors: boolean;
+  showFleetHeatmapControl: boolean;
+  showFleetHeatmap: boolean;
   exportPending: boolean;
   presentation: PresentationState;
   onViewModeChange: (mode: MapViewMode) => void;
@@ -17,6 +19,7 @@ interface TopBarProps {
   onToggleLabels: () => void;
   onToggleFlows: () => void;
   onToggleCorridors: () => void;
+  onToggleFleetHeatmap: () => void;
   onResetCamera: () => void;
   onExport: () => void;
   onStartPresentation: () => void;
@@ -64,6 +67,8 @@ export function TopBar({
   showLabels,
   showFlows,
   showCorridors,
+  showFleetHeatmapControl,
+  showFleetHeatmap,
   exportPending,
   presentation,
   onViewModeChange,
@@ -71,6 +76,7 @@ export function TopBar({
   onToggleLabels,
   onToggleFlows,
   onToggleCorridors,
+  onToggleFleetHeatmap,
   onResetCamera,
   onExport,
   onStartPresentation,
@@ -153,6 +159,11 @@ export function TopBar({
               >
                 Corredores
               </ControlButton>
+              {showFleetHeatmapControl ? (
+                <ControlButton active={showFleetHeatmap} onClick={onToggleFleetHeatmap}>
+                  Heatmap de flota
+                </ControlButton>
+              ) : null}
               <ControlButton onClick={onResetCamera}>Reiniciar camara</ControlButton>
               <ControlButton disabled={exportPending} onClick={onExport}>
                 {exportPending ? "Exportando..." : "Exportar PNG"}

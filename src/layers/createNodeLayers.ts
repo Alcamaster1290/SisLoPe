@@ -11,6 +11,7 @@ interface NodeLayerOptions {
   selectedNodeId: string | null;
   viewMode: MapViewMode;
   showLabels: boolean;
+  showFleetHeatmap: boolean;
   clustersActive: boolean;
   mapZoom: number;
   departmentFocused: boolean;
@@ -235,6 +236,7 @@ export function createNodeLayers({
   selectedNodeId,
   viewMode,
   showLabels,
+  showFleetHeatmap,
   clustersActive,
   mapZoom,
   departmentFocused,
@@ -273,7 +275,7 @@ export function createNodeLayers({
     new HexagonLayer<LogisticsNode>({
       id: "node-density",
       data: nodes,
-      visible: viewMode === "density",
+      visible: viewMode === "density" && !showFleetHeatmap,
       pickable: false,
       extruded: true,
       gpuAggregation: true,

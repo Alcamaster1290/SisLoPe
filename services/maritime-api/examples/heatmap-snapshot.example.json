@@ -1,0 +1,35 @@
+{
+  "snapshotDate": "2026-03-22",
+  "sourceName": "public-ais-demo",
+  "coverageKind": "mixed",
+  "qualityBand": "partial",
+  "coverageNote": "Cobertura referencial, parcial en corredores fluviales.",
+  "cells": [
+    {
+      "cellId": "85754e67fffffff",
+      "gridSystem": "h3",
+      "resolution": 5,
+      "lat": -12.0464,
+      "lon": -77.0428,
+      "geometryBounds": null,
+      "presenceCount": 12,
+      "hoursObserved": 8,
+      "sourceName": "public-ais-demo",
+      "coverageKind": "maritime",
+      "qualityBand": "partial"
+    },
+    {
+      "cellId": "85754e2bfffffff",
+      "gridSystem": "h3",
+      "resolution": 5,
+      "lat": -3.7437,
+      "lon": -73.2516,
+      "geometryBounds": null,
+      "presenceCount": 5,
+      "hoursObserved": 4,
+      "sourceName": "public-ais-demo",
+      "coverageKind": "fluvial",
+      "qualityBand": "partial"
+    }
+  ]
+}

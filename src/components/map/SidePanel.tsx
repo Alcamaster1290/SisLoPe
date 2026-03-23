@@ -1,5 +1,7 @@
+import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import type { LogisticsNode } from "@/types/logistics";
+import { getMaritimeTrackingFeatureFlags } from "@/lib/maritimeTracking/flags";
 import { CATEGORY_META } from "@/utils/colorScale";
 import {
   formatCategory,
@@ -9,6 +11,10 @@ import {
   formatStrategicLevel,
   formatTerrain,
 } from "@/utils/format";
+
+const LazyMaritimeTrackingPanel = lazy(
+  () => import("@/components/maritime/MaritimeTrackingPanel"),
+);
 
 interface SidePanelProps {
   node: LogisticsNode | null;
@@ -42,6 +48,12 @@ export default function SidePanel({
   onFocusNode,
   onClose,
 }: SidePanelProps) {
+  const maritimeTracking = getMaritimeTrackingFeatureFlags();
+  const showMaritimeTracking =
+    maritimeTracking.enabled &&
+    !!node &&
+    (node.category === "port_sea" || node.category === "port_river");
+
   return (
     <motion.aside
       initial={{ opacity: 0, x: 20 }}
@@ -223,6 +235,21 @@ export default function SidePanel({
                 )}
               </div>
             </section>
+
+            {showMaritimeTracking && node ? (
+              <Suspense
+                fallback={
+                  <section className="rounded-[24px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
+                    <div
+                      className="h-16 rounded-[18px]"
+                      style={{ backgroundColor: "var(--surface-border)" }}
+                    />
+                  </section>
+                }
+              >
+                <LazyMaritimeTrackingPanel node={node} />
+              </Suspense>
+            ) : null}
           </div>
         </div>
       )}

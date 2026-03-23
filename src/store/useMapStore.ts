@@ -29,6 +29,7 @@ interface MapStoreState {
   showLabels: boolean;
   showFlows: boolean;
   showCorridors: boolean;
+  showFleetHeatmap: boolean;
   isMapExpanded: boolean;
   hoveredNodeId: string | null;
   selectedNodeId: string | null;
@@ -53,6 +54,7 @@ interface MapStoreState {
   toggleLabels: () => void;
   toggleFlows: () => void;
   toggleCorridors: () => void;
+  toggleFleetHeatmap: () => void;
   toggleMapExpanded: () => void;
   setHoveredNode: (nodeId: string | null) => void;
   selectNode: (nodeId: string | null, origin?: ActionOrigin) => void;
@@ -106,6 +108,7 @@ export function createInitialMapState(): Pick<
   | "showLabels"
   | "showFlows"
   | "showCorridors"
+  | "showFleetHeatmap"
   | "isMapExpanded"
   | "mapStatus"
   | "renderHealth"
@@ -128,6 +131,7 @@ export function createInitialMapState(): Pick<
     showLabels: true,
     showFlows: true,
     showCorridors: true,
+    showFleetHeatmap: false,
     isMapExpanded: true,
     hoveredNodeId: null,
     selectedNodeId: null,
@@ -250,6 +254,11 @@ export const useMapStore = create<MapStoreState>((set) => ({
       showCorridors: !state.showCorridors,
       ...pausePresentationOnUserAction(state),
     })),
+  toggleFleetHeatmap: () =>
+    set((state) => ({
+      showFleetHeatmap: !state.showFleetHeatmap,
+      ...pausePresentationOnUserAction(state),
+    })),
   toggleMapExpanded: () =>
     set((state) => ({
       isMapExpanded: !state.isMapExpanded,
@@ -318,6 +327,7 @@ export const useMapStore = create<MapStoreState>((set) => ({
       showFlows: true,
       showCorridors: true,
       showLabels: true,
+      showFleetHeatmap: false,
     })),
   pausePresentation: () =>
     set((state) => ({
@@ -351,3 +361,4 @@ export const useMapStore = create<MapStoreState>((set) => ({
       },
     })),
 }));
+

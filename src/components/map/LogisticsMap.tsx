@@ -7,6 +7,7 @@ import { departmentRegions } from "@/data/departmentRegions";
 import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { MapControlStack } from "@/components/map/MapControlStack";
+import { MaritimeHeatmapBadge } from "@/components/map/MaritimeHeatmapBadge";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { shouldShowFallbackNodeLayers } from "@/components/map/nodeLayerVisibility";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
@@ -17,9 +18,12 @@ import {
   scheduleMapLayoutResync,
 } from "@/components/map/mapLayoutSync";
 import { createFlowLayers } from "@/layers/createFlowLayers";
+import { createMaritimeFleetHeatmapLayer } from "@/layers/createMaritimeFleetHeatmapLayer";
 import { createNodeLayers } from "@/layers/createNodeLayers";
 import { getMapStyle } from "@/lib/mapStyle";
+import type { MaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/service";
 import { useMapStore } from "@/store/useMapStore";
+import { useMaritimeFleetHeatmap } from "@/hooks/useMaritimeFleetHeatmap";
 import type {
   LogisticsFlow,
   LogisticsNode,
@@ -64,6 +68,9 @@ interface LogisticsMapProps {
   nodeMap: Map<string, LogisticsNode>;
   isDesktop: boolean;
   isMapExpanded: boolean;
+  heatmapEnabled: boolean;
+  showFleetHeatmap: boolean;
+  heatmapService: MaritimeFleetHeatmapReadService;
   onToggleMapExpanded: () => void;
   onSelectDepartment: (departmentId: DepartmentId | null) => void;
 }
@@ -367,6 +374,9 @@ export function LogisticsMap({
   nodeMap,
   isDesktop,
   isMapExpanded,
+  heatmapEnabled,
+  showFleetHeatmap,
+  heatmapService,
   onToggleMapExpanded,
   onSelectDepartment,
 }: LogisticsMapProps) {
@@ -416,6 +426,10 @@ export function LogisticsMap({
   const departmentFocused = Boolean(focusedDepartment);
   const selectedDepartmentRef = useRef<DepartmentId | null>(focusedDepartment);
   const atmosphereClass = useMemo(() => getModeAtmosphereClass(effectiveViewMode), [effectiveViewMode]);
+  const heatmapState = useMaritimeFleetHeatmap({
+    enabled: heatmapEnabled && showFleetHeatmap,
+    service: heatmapService,
+  });
 
   const labelData = useMemo<NodeLabelDatum[]>(() => {
     if (!syncState || clustersActive || mapZoom < 6) return [];
@@ -601,6 +615,11 @@ export function LogisticsMap({
 
   const deckLayers = useMemo(() => {
     return [
+      createMaritimeFleetHeatmapLayer({
+        cells: heatmapState.cells,
+        visible: heatmapEnabled && showFleetHeatmap,
+        viewMode: effectiveViewMode,
+      }),
       ...createFlowLayers({
         flowFeatures,
         hoveredNodeId,
@@ -618,6 +637,7 @@ export function LogisticsMap({
         selectedNodeId,
         viewMode: effectiveViewMode,
         showLabels,
+        showFleetHeatmap,
         clustersActive,
         mapZoom,
         departmentFocused,
@@ -634,12 +654,15 @@ export function LogisticsMap({
     effectiveViewMode,
     flowFeatures,
     focusedDepartment,
+    heatmapEnabled,
+    heatmapState.cells,
     hoveredNodeId,
     labelData,
     mapZoom,
     nodes,
     selectedNodeId,
     showCorridors,
+    showFleetHeatmap,
     showFlows,
     showLabels,
   ]);
@@ -1312,6 +1335,13 @@ export function LogisticsMap({
         onReady={handleDeckReady}
       />
       <div className={atmosphereClass} />
+      <MaritimeHeatmapBadge
+        enabled={heatmapEnabled && showFleetHeatmap}
+        status={heatmapState.status}
+        snapshot={heatmapState.snapshot}
+        coverage={heatmapState.coverage}
+        errorMessage={heatmapState.errorMessage}
+      />
       {effectiveViewMode === "emphasis3d" ? (
         <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-lg">
           <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">

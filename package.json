@@ -10,7 +10,16 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "maritime:dev": "npm --prefix services/maritime-api run dev",
+    "maritime:build": "npm --prefix services/maritime-api run build",
+    "maritime:test": "npm --prefix services/maritime-api run test",
+    "maritime:lint": "npm --prefix services/maritime-api run lint",
+    "maritime:heatmap:import": "npm --prefix services/maritime-api run heatmap:import --",
+    "maritime:heatmap:sync:gfw": "npm --prefix services/maritime-api run heatmap:sync:gfw --",
+    "maritime:heatmap:sync:gfw:dry-run": "npm --prefix services/maritime-api run heatmap:sync:gfw:dry-run",
+    "maritime:db:generate": "npm --prefix services/maritime-api run db:generate",
+    "maritime:db:migrate": "npm --prefix services/maritime-api run db:migrate"
   },
   "repository": {
     "type": "git",

@@ -8,6 +8,9 @@ import { TopBar } from "@/components/ui/TopBar";
 import { useFilteredLogisticsData } from "@/hooks/useFilteredLogisticsData";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { usePresentationTour } from "@/hooks/usePresentationTour";
+import { createHttpMaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/adapters/http";
+import { noopMaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/adapters/noop";
+import { getMaritimeTrackingFeatureFlags } from "@/lib/maritimeTracking/flags";
 import { exportViewAsPng } from "@/lib/exportView";
 import { useMapStore } from "@/store/useMapStore";
 import type { DepartmentId, LogisticsNode, NodeCategory } from "@/types/logistics";
@@ -24,6 +27,7 @@ export function App() {
   const showLabels = useMapStore((state) => state.showLabels);
   const showFlows = useMapStore((state) => state.showFlows);
   const showCorridors = useMapStore((state) => state.showCorridors);
+  const showFleetHeatmap = useMapStore((state) => state.showFleetHeatmap);
   const isMapExpanded = useMapStore((state) => state.isMapExpanded);
   const selectedNodeId = useMapStore((state) => state.selectedNodeId);
   const activeCategories = useMapStore((state) => state.filters.categories);
@@ -35,6 +39,7 @@ export function App() {
   const toggleLabels = useMapStore((state) => state.toggleLabels);
   const toggleFlows = useMapStore((state) => state.toggleFlows);
   const toggleCorridors = useMapStore((state) => state.toggleCorridors);
+  const toggleFleetHeatmap = useMapStore((state) => state.toggleFleetHeatmap);
   const toggleMapExpanded = useMapStore((state) => state.toggleMapExpanded);
   const setCategoryFilters = useMapStore((state) => state.setCategoryFilters);
   const clearCategoryFilters = useMapStore((state) => state.clearCategoryFilters);
@@ -51,6 +56,15 @@ export function App() {
   const stopPresentation = useMapStore((state) => state.stopPresentation);
   const { nodeMap, filteredNodes, filteredFlows, filteredNodeIds, searchMatches, departmentCounts, nodes } =
     useFilteredLogisticsData();
+  const maritimeFeatureFlags = useMemo(() => getMaritimeTrackingFeatureFlags(), []);
+  const maritimeHeatmapFeatureEnabled = maritimeFeatureFlags.heatmapEnabled;
+  const maritimeHeatmapService = useMemo(
+    () =>
+      maritimeHeatmapFeatureEnabled && maritimeFeatureFlags.apiBaseUrl
+        ? createHttpMaritimeFleetHeatmapReadService(maritimeFeatureFlags.apiBaseUrl)
+        : noopMaritimeFleetHeatmapReadService,
+    [maritimeFeatureFlags.apiBaseUrl, maritimeHeatmapFeatureEnabled],
+  );
 
   const getCameraPadding = useCallback(
     (expanded: boolean) => {
@@ -320,6 +334,8 @@ export function App() {
         showLabels={showLabels}
         showFlows={showFlows}
         showCorridors={showCorridors}
+        showFleetHeatmap={showFleetHeatmap}
+        showFleetHeatmapControl={maritimeHeatmapFeatureEnabled}
         exportPending={exportPending}
         presentation={presentation}
         onViewModeChange={setViewMode}
@@ -327,6 +343,7 @@ export function App() {
         onToggleLabels={toggleLabels}
         onToggleFlows={toggleFlows}
         onToggleCorridors={toggleCorridors}
+        onToggleFleetHeatmap={toggleFleetHeatmap}
         onResetCamera={resetCamera}
         onExport={exportCurrentView}
         onStartPresentation={startPresentation}
@@ -376,6 +393,9 @@ export function App() {
                 nodeMap={nodeMap}
                 isDesktop={isDesktop}
                 isMapExpanded={isMapExpanded}
+                heatmapEnabled={maritimeHeatmapFeatureEnabled}
+                showFleetHeatmap={showFleetHeatmap}
+                heatmapService={maritimeHeatmapService}
                 onToggleMapExpanded={handleToggleMapExpanded}
                 onSelectDepartment={focusDepartment}
               />

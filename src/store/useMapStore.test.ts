@@ -7,6 +7,7 @@ describe("useMapStore", () => {
   });
 
   it("starts presentation mode with visual toggles enabled", () => {
+    useMapStore.getState().toggleFleetHeatmap();
     useMapStore.getState().startPresentation();
 
     const state = useMapStore.getState();
@@ -15,6 +16,7 @@ describe("useMapStore", () => {
     expect(state.viewMode).toBe("flows");
     expect(state.showFlows).toBe(true);
     expect(state.showCorridors).toBe(true);
+    expect(state.showFleetHeatmap).toBe(false);
   });
 
   it("pauses presentation on manual filter changes", () => {
@@ -59,11 +61,23 @@ describe("useMapStore", () => {
 
     expect(state.mapStatus).toBe("loading");
     expect(state.isMapExpanded).toBe(true);
+    expect(state.showFleetHeatmap).toBe(false);
     expect(state.renderHealth).toEqual({
       maplibre: false,
       deck: false,
       three: true,
     });
+  });
+
+  it("toggles fleet heatmap without touching the default map expansion", () => {
+    const store = useMapStore.getState();
+
+    store.toggleFleetHeatmap();
+    expect(useMapStore.getState().showFleetHeatmap).toBe(true);
+    expect(useMapStore.getState().isMapExpanded).toBe(true);
+
+    store.toggleFleetHeatmap();
+    expect(useMapStore.getState().showFleetHeatmap).toBe(false);
   });
 
   it("updates renderer health and resets the pipeline", () => {
