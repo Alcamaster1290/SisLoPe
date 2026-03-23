@@ -7,7 +7,6 @@ import { departmentRegions } from "@/data/departmentRegions";
 import peruBoundary from "@/data/peruBoundary";
 import { DeckCanvasOverlay } from "@/components/map/DeckCanvasOverlay";
 import { MapControlStack } from "@/components/map/MapControlStack";
-import { MaritimeHeatmapBadge } from "@/components/map/MaritimeHeatmapBadge";
 import { NodeTooltip } from "@/components/map/NodeTooltip";
 import { shouldShowFallbackNodeLayers } from "@/components/map/nodeLayerVisibility";
 import { RenderStatusOverlay } from "@/components/map/RenderStatusOverlay";
@@ -1335,13 +1334,6 @@ export function LogisticsMap({
         onReady={handleDeckReady}
       />
       <div className={atmosphereClass} />
-      <MaritimeHeatmapBadge
-        enabled={heatmapEnabled && showFleetHeatmap}
-        status={heatmapState.status}
-        snapshot={heatmapState.snapshot}
-        coverage={heatmapState.coverage}
-        errorMessage={heatmapState.errorMessage}
-      />
       {effectiveViewMode === "emphasis3d" ? (
         <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-lg">
           <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">

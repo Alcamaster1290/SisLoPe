@@ -1,4 +1,5 @@
-import { H3HexagonLayer } from "@deck.gl/geo-layers";
+import { PolygonLayer } from "@deck.gl/layers";
+import { cellToBoundary, isValidCell } from "h3-js";
 import type { MapViewMode } from "@/types/logistics";
 import type { MaritimeFleetHeatmapCell } from "@/types/maritimeHeatmap";
 
@@ -38,18 +39,22 @@ export function createMaritimeFleetHeatmapLayer({
   visible,
   viewMode,
 }: CreateMaritimeFleetHeatmapLayerOptions) {
-  const maxPresenceCount = cells.reduce((maxValue, cell) => Math.max(maxValue, cell.presenceCount), 0);
+  const safeCells = visible ? cells.filter((cell) => isValidCell(cell.cellId)) : [];
+  const maxPresenceCount = safeCells.reduce(
+    (maxValue, cell) => Math.max(maxValue, cell.presenceCount),
+    0,
+  );
 
-  return new H3HexagonLayer<MaritimeFleetHeatmapCell>({
+  return new PolygonLayer<MaritimeFleetHeatmapCell>({
     id: "maritime-fleet-heatmap",
-    data: cells,
+    data: safeCells,
     visible,
     pickable: false,
     filled: true,
     stroked: false,
     extruded: false,
     opacity: viewMode === "density" ? 0.3 : 0.42,
-    getHexagon: (cell) => cell.cellId,
+    getPolygon: (cell) => cellToBoundary(cell.cellId, true).map(([lon, lat]) => [lon, lat]),
     getFillColor: (cell) => getFleetHeatmapColor(cell, maxPresenceCount, viewMode),
   });
 }

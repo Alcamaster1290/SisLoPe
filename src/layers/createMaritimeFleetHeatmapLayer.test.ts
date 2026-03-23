@@ -21,7 +21,7 @@ describe("createMaritimeFleetHeatmapLayer", () => {
     },
   ];
 
-  it("crea una capa H3 visible con las celdas agregadas", () => {
+  it("crea una capa poligonal visible con las celdas agregadas", () => {
     const layer = createMaritimeFleetHeatmapLayer({
       visible: true,
       viewMode: "standard",
@@ -42,6 +42,22 @@ describe("createMaritimeFleetHeatmapLayer", () => {
 
     expect(layer.props.visible).toBe(false);
     expect(layer.props.data).toEqual([]);
+  });
+
+  it("filtra celdas H3 invalidas para no romper deck", () => {
+    const layer = createMaritimeFleetHeatmapLayer({
+      visible: true,
+      viewMode: "standard",
+      cells: [
+        ...cells,
+        {
+          ...cells[0],
+          cellId: "invalid-cell",
+        },
+      ],
+    });
+
+    expect(layer.props.data).toHaveLength(1);
   });
 
   it("incrementa la intensidad de color cuando sube la presencia", () => {
