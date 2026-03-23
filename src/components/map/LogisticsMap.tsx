@@ -70,6 +70,7 @@ interface LogisticsMapProps {
   heatmapEnabled: boolean;
   showFleetHeatmap: boolean;
   heatmapService: MaritimeFleetHeatmapReadService;
+  onResetCamera: () => void;
   onToggleMapExpanded: () => void;
   onSelectDepartment: (departmentId: DepartmentId | null) => void;
 }
@@ -376,6 +377,7 @@ export function LogisticsMap({
   heatmapEnabled,
   showFleetHeatmap,
   heatmapService,
+  onResetCamera,
   onToggleMapExpanded,
   onSelectDepartment,
 }: LogisticsMapProps) {
@@ -1312,18 +1314,6 @@ export function LogisticsMap({
     mapRef.current?.zoomOut({ duration: 500 });
   }, []);
 
-  const handleResetView = useCallback(() => {
-    const modePreset = getModeCameraPreset(effectiveViewModeRef.current);
-    mapRef.current?.easeTo({
-      center: [INITIAL_CAMERA_STATE.longitude, INITIAL_CAMERA_STATE.latitude],
-      zoom: INITIAL_CAMERA_STATE.zoom,
-      pitch: modePreset.pitch,
-      bearing: modePreset.bearing,
-      duration: 1000,
-      essential: true,
-    });
-  }, []);
-
   return (
     <div className={`relative h-full min-h-0 w-full ${themeDepth === "light" ? "map-theme-light" : ""}`}>
       <div ref={mapContainerRef} className="absolute inset-0" />
@@ -1348,7 +1338,7 @@ export function LogisticsMap({
         isMapExpanded={isMapExpanded}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
-        onResetView={handleResetView}
+        onResetCamera={onResetCamera}
         onToggleMapExpanded={onToggleMapExpanded}
       />
       <RenderStatusOverlay mapStatus={mapStatus} renderHealth={renderHealth} onRetry={handleRetry} />

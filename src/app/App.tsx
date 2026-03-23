@@ -396,6 +396,7 @@ export function App() {
                 heatmapEnabled={maritimeHeatmapFeatureEnabled}
                 showFleetHeatmap={showFleetHeatmap}
                 heatmapService={maritimeHeatmapService}
+                onResetCamera={resetCamera}
                 onToggleMapExpanded={handleToggleMapExpanded}
                 onSelectDepartment={focusDepartment}
               />

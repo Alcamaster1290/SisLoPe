@@ -2,7 +2,7 @@ interface MapControlStackProps {
   isMapExpanded: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onResetView: () => void;
+  onResetCamera: () => void;
   onToggleMapExpanded: () => void;
 }
 
@@ -10,7 +10,7 @@ export function MapControlStack({
   isMapExpanded,
   onZoomIn,
   onZoomOut,
-  onResetView,
+  onResetCamera,
   onToggleMapExpanded,
 }: MapControlStackProps) {
   return (
@@ -33,8 +33,10 @@ export function MapControlStack({
       </button>
       <button
         type="button"
-        onClick={onResetView}
+        onClick={onResetCamera}
         className="control-pill min-h-11 rounded-2xl px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
+        aria-label="Reiniciar cámara"
+        title="Reiniciar cámara"
       >
         Peru
       </button>
