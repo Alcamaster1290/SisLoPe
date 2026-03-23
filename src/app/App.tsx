@@ -8,6 +8,7 @@ import { TopBar } from "@/components/ui/TopBar";
 import { useFilteredLogisticsData } from "@/hooks/useFilteredLogisticsData";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { usePresentationTour } from "@/hooks/usePresentationTour";
+import { resetPeruView } from "@/app/resetPeruView";
 import { createHttpMaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/adapters/http";
 import { noopMaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/adapters/noop";
 import { getMaritimeTrackingFeatureFlags } from "@/lib/maritimeTracking/flags";
@@ -135,15 +136,14 @@ export function App() {
   };
 
   const resetCamera = () => {
-    clearCameraBeforeNodeFocus();
-    requestCameraCommand(
-      {
-        kind: "reset",
-        duration: 1600,
-        padding: getCameraPadding(isMapExpanded),
-      },
-      "user",
-    );
+    resetPeruView({
+      isMapExpanded,
+      getCameraPadding,
+      clearCameraBeforeNodeFocus,
+      setDepartment,
+      selectNode,
+      requestCameraCommand,
+    });
   };
 
   const focusDepartment = (departmentId: DepartmentId | null) => {

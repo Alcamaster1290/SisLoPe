@@ -707,6 +707,12 @@ export function LogisticsMap({
   }, [selectedNodeId]);
 
   useEffect(() => {
+    if (!selectedNodeId && tooltip?.nodeId) {
+      setTooltip(null);
+    }
+  }, [selectedNodeId, tooltip?.nodeId]);
+
+  useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
