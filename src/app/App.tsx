@@ -17,10 +17,54 @@ import { useMapStore } from "@/store/useMapStore";
 import type { DepartmentId, LogisticsNode, NodeCategory } from "@/types/logistics";
 import { getDepartmentViewPreset, getNodeFocusCamera, getSuggestedPadding } from "@/utils/geo";
 import { CATEGORY_META } from "@/utils/colorScale";
+import { AuthProvider, useAuth } from "@/auth/AuthContext";
+import { AuthScreen } from "@/auth/AuthScreen";
 
 const LazySidePanel = lazy(() => import("@/components/map/SidePanel"));
 
+function AppWithAuth() {
+  const { status, user } = useAuth();
+
+  if (status === "checking") {
+    return (
+      <main
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: '"Rajdhani", sans-serif',
+            fontSize: "1.2rem",
+            fontWeight: 600,
+            color: "var(--text-main)",
+          }}
+        >
+          Verificando acceso...
+        </p>
+      </main>
+    );
+  }
+
+  if (status === "unauthenticated" || !user) {
+    return <AuthScreen />;
+  }
+
+  return <AppContent />;
+}
+
 export function App() {
+  return (
+    <AuthProvider>
+      <AppWithAuth />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const rootRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
   const themeDepth = useMapStore((state) => state.themeDepth);

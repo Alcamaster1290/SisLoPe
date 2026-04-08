@@ -4,9 +4,15 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.ts": {
+      "memory": 512,
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!.*\\.[^/]+$).*)",
+      "source": "/((?!api/)(?!.*\\.[^/]+$).*)",
       "destination": "/index.html"
     }
   ]
