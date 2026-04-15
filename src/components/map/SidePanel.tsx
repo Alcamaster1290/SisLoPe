@@ -18,6 +18,8 @@ const LazyMaritimeTrackingPanel = lazy(
 
 const ADEX_URL =
   import.meta.env.VITE_ADEX_URL?.trim() || "https://adex-palletizer.vercel.app";
+const ALVIN_URL =
+  import.meta.env.VITE_ALVIN_URL?.trim() || "https://alvin-comex.streamlit.app";
 
 /* ------------------------------------------------------------------ */
 /*  Operational profile per node category                             */
@@ -215,7 +217,7 @@ export default function SidePanel({
 
           <div className="space-y-3">
             <a
-              href={ADEX_URL}
+              href={ALVIN_URL}
               target="_blank"
               rel="noreferrer noopener"
               className="block rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4 transition hover:border-[var(--surface-border-strong)]"
@@ -229,13 +231,13 @@ export default function SidePanel({
                 </div>
               </div>
               <p className="mt-2 text-sm leading-6 text-[var(--text-main)]">
-                Planifica embalaje con ADEX Palletizer y calcula costos aterrizados con el
+                Calcula costos aterrizados, tributos y precio de venta con ALVIN, el
                 Expediente de Costos.
               </p>
             </a>
 
             <a
-              href={ADEX_URL}
+              href={ALVIN_URL}
               target="_blank"
               rel="noreferrer noopener"
               className="block rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4 transition hover:border-[var(--surface-border-strong)]"
@@ -431,6 +433,20 @@ export default function SidePanel({
               <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
                 Ecosistema ADEX
               </div>
+              <a
+                href={ALVIN_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-3 text-left transition hover:border-[var(--surface-border-strong)]"
+              >
+                <div>
+                  <div className="font-semibold text-[var(--text-strong)]">ALVIN - Expediente de Costos</div>
+                  <div className="text-xs text-[var(--text-soft)]">Tributos, gastos y precio de venta</div>
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-soft)]">
+                  Abrir
+                </span>
+              </a>
               <a
                 href={ADEX_URL}
                 target="_blank"
