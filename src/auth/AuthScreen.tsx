@@ -251,16 +251,32 @@ export function AuthScreen() {
             target="_blank"
             rel="noreferrer noopener"
             style={{
+              display: 'inline-block',
+              width: '100%',
+              padding: '0.55rem 0.75rem',
               fontFamily: '"Rajdhani", sans-serif',
               fontWeight: 700,
               fontSize: '0.88rem',
               color: 'rgba(146, 30, 30, 0.9)',
               textDecoration: 'none',
               letterSpacing: '0.02em',
+              border: '1px solid rgba(146, 30, 30, 0.2)',
+              borderRadius: 10,
+              transition: 'background 0.15s',
             }}
           >
-            Regístrate gratis en ADEX Palletizer &rarr;
+            Crear cuenta en ADEX Palletizer
           </a>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--text-soft)',
+              marginTop: '0.5rem',
+              lineHeight: 1.45,
+            }}
+          >
+            Tu cuenta da acceso a todo el ecosistema: Palletizer, Expediente de Costos y SisLoPe.
+          </p>
         </div>
       </section>
     </main>

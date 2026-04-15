@@ -16,11 +16,80 @@ const LazyMaritimeTrackingPanel = lazy(
   () => import("@/components/maritime/MaritimeTrackingPanel"),
 );
 
-interface SidePanelProps {
-  node: LogisticsNode | null;
-  connections: LogisticsNode[];
-  onFocusNode: (nodeId: string) => void;
-  onClose: () => void;
+const ADEX_URL =
+  import.meta.env.VITE_ADEX_URL?.trim() || "https://adex-palletizer.vercel.app";
+
+/* ------------------------------------------------------------------ */
+/*  Operational profile per node category                             */
+/* ------------------------------------------------------------------ */
+
+interface OperationalProfile {
+  operationTypes: string[];
+  customsRole: string;
+  connectivity: string;
+  risks: string;
+  suggestedModes: string[];
+}
+
+function getOperationalProfile(node: LogisticsNode): OperationalProfile {
+  switch (node.category) {
+    case "port_sea":
+      return {
+        operationTypes: ["Importacion maritima", "Exportacion maritima", "Transbordo"],
+        customsRole: "Despacho directo e indirecto. Zona primaria aduanera.",
+        connectivity: "Rutas maritimas internacionales, interconexion terrestre a hubs interiores.",
+        risks: "Congestion portuaria, sobrestadia, restricciones de calado.",
+        suggestedModes: ["Maritimo", "Multimodal maritimo-terrestre"],
+      };
+    case "port_river":
+      return {
+        operationTypes: ["Abastecimiento fluvial", "Exportacion regional"],
+        customsRole: "Despacho simplificado. Intendencia regional.",
+        connectivity: "Vias fluviales amazonicas, enlace a red vial nacional.",
+        risks: "Estacionalidad del caudal, capacidad limitada.",
+        suggestedModes: ["Fluvial", "Multimodal fluvial-terrestre"],
+      };
+    case "airport":
+      return {
+        operationTypes: ["Importacion aerea", "Exportacion de perecederos", "Carga urgente"],
+        customsRole: "Despacho aereo. Zona de carga aduanera.",
+        connectivity: "Vuelos nacionales e internacionales, acceso terrestre.",
+        risks: "Capacidad de bodega limitada, costo por kg elevado.",
+        suggestedModes: ["Aereo", "Multimodal aereo-terrestre"],
+      };
+    case "border":
+      return {
+        operationTypes: ["Transito internacional", "Importacion terrestre", "Exportacion terrestre"],
+        customsRole: "Control fronterizo. CEBAF o paso autorizado.",
+        connectivity: "Corredores binacionales, red vial internacional.",
+        risks: "Congestion en temporada alta, requisitos fitosanitarios.",
+        suggestedModes: ["Terrestre"],
+      };
+    case "freezone":
+      return {
+        operationTypes: ["Almacenamiento bajo regimen especial", "Transformacion", "Reexportacion"],
+        customsRole: "Regimen de zona franca. Beneficios tributarios.",
+        connectivity: "Acceso a puerto o aeropuerto cercano.",
+        risks: "Regulaciones de zona franca, limites de permanencia.",
+        suggestedModes: ["Terrestre"],
+      };
+    case "inland_hub":
+      return {
+        operationTypes: ["Consolidacion", "Distribucion regional", "Cross-docking"],
+        customsRole: "Deposito temporal o zona secundaria.",
+        connectivity: "Convergencia de corredores terrestres.",
+        risks: "Dependencia de infraestructura vial.",
+        suggestedModes: ["Terrestre", "Multimodal"],
+      };
+    case "corridor_anchor":
+      return {
+        operationTypes: ["Transito de corredores", "Consolidacion estrategica"],
+        customsRole: "Referencia logistica. Sin despacho directo.",
+        connectivity: "Articulacion de cadenas logisticas nacionales.",
+        risks: "Variable segun corredor asociado.",
+        suggestedModes: ["Terrestre"],
+      };
+  }
 }
 
 function getOperationalRole(node: LogisticsNode): string {
@@ -40,6 +109,72 @@ function getOperationalRole(node: LogisticsNode): string {
     case "corridor_anchor":
       return "Punto de anclaje para corredores estrategicos y visualizacion de cadenas logisticas.";
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Operational profile display component                             */
+/* ------------------------------------------------------------------ */
+
+function OperationalProfileSection({ node }: { node: LogisticsNode }) {
+  const profile = getOperationalProfile(node);
+  return (
+    <section className="rounded-[24px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+        Modo operativo
+      </div>
+      <div className="mt-3 space-y-3 text-sm">
+        <div>
+          <div className="text-[var(--text-soft)]">Tipos de operacion</div>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {profile.operationTypes.map((type) => (
+              <span
+                key={type}
+                className="rounded-full border border-[var(--surface-border)] px-2.5 py-1 text-xs text-[var(--text-main)]"
+              >
+                {type}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="text-[var(--text-soft)]">Rol aduanero</div>
+          <div className="text-[var(--text-main)]">{profile.customsRole}</div>
+        </div>
+        <div>
+          <div className="text-[var(--text-soft)]">Conectividad</div>
+          <div className="text-[var(--text-main)]">{profile.connectivity}</div>
+        </div>
+        <div>
+          <div className="text-[var(--text-soft)]">Riesgos conocidos</div>
+          <div className="text-[var(--text-main)]">{profile.risks}</div>
+        </div>
+        <div>
+          <div className="text-[var(--text-soft)]">Modo sugerido</div>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {profile.suggestedModes.map((mode) => (
+              <span
+                key={mode}
+                className="rounded-full border border-[var(--surface-border)] px-2.5 py-1 text-xs font-semibold text-[var(--text-strong)]"
+              >
+                {mode}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  SidePanel                                                         */
+/* ------------------------------------------------------------------ */
+
+interface SidePanelProps {
+  node: LogisticsNode | null;
+  connections: LogisticsNode[];
+  onFocusNode: (nodeId: string) => void;
+  onClose: () => void;
 }
 
 export default function SidePanel({
@@ -62,31 +197,83 @@ export default function SidePanel({
       className="panel-shell thin-scrollbar order-3 flex min-h-[18rem] flex-col overflow-hidden rounded-[28px] lg:min-h-0"
     >
       {!node ? (
-        <div className="flex h-full flex-col justify-between px-5 py-5">
+        /* -------------------------------------------------------- */
+        /*  Empty state — task-oriented entrypoints                 */
+        /* -------------------------------------------------------- */
+        <div className="flex h-full flex-col gap-5 px-5 py-5">
           <div>
             <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
-              Detalle del nodo
+              Centro operativo
             </div>
             <h2 className="mt-2 font-['Rajdhani'] text-2xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
-              Selecciona un nodo
+              Que necesitas hacer?
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-main)]">
-              Haz clic sobre un nodo o usa la busqueda para fijar el panel. El doble clic acerca la
-              vista operativa y el modo demo recorre los puntos criticos del sistema.
+              Selecciona una opcion o haz clic en un nodo del mapa para ver su perfil operativo.
             </p>
           </div>
 
-          <div className="grid gap-3 rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
-              Campos previstos
-            </div>
-            <div className="text-sm text-[var(--text-main)]">
-              Nombre completo, categoria, ubicacion, funcion logistica, conexiones, tags y codigos
-              operativos.
+          <div className="space-y-3">
+            <a
+              href={ADEX_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4 transition hover:border-[var(--surface-border-strong)]"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0a6a72]/15 text-xs font-bold text-[#0a6a72]">
+                  IM
+                </span>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-strong)]">
+                  Quiero importar
+                </div>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-main)]">
+                Planifica embalaje con ADEX Palletizer y calcula costos aterrizados con el
+                Expediente de Costos.
+              </p>
+            </a>
+
+            <a
+              href={ADEX_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4 transition hover:border-[var(--surface-border-strong)]"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#6a3d0a]/15 text-xs font-bold text-[#6a3d0a]">
+                  EX
+                </span>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-strong)]">
+                  Quiero exportar
+                </div>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-main)]">
+                Evalua costos de exportacion, documentacion aduanera y rutas de salida desde
+                puertos peruanos.
+              </p>
+            </a>
+
+            <div className="rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#921e1e]/15 text-xs font-bold text-[#921e1e]">
+                  NO
+                </span>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-strong)]">
+                  Evaluar un nodo
+                </div>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-main)]">
+                Haz clic sobre un puerto, aeropuerto, hub o frontera en el mapa para ver su
+                funcion operativa, conexiones y modo sugerido.
+              </p>
             </div>
           </div>
         </div>
       ) : (
+        /* -------------------------------------------------------- */
+        /*  Populated state — node detail + operational profile     */
+        /* -------------------------------------------------------- */
         <div className="thin-scrollbar flex-1 overflow-y-auto px-5 py-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -173,6 +360,9 @@ export default function SidePanel({
               <p className="text-sm leading-7 text-[var(--text-main)]">{getOperationalRole(node)}</p>
             </section>
 
+            {/* Operational profile — types, customs, connectivity, risks, modes */}
+            <OperationalProfileSection node={node} />
+
             <section className="rounded-[24px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
               <div className="grid gap-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
@@ -234,6 +424,27 @@ export default function SidePanel({
                   </div>
                 )}
               </div>
+            </section>
+
+            {/* Ecosystem links */}
+            <section className="space-y-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+                Ecosistema ADEX
+              </div>
+              <a
+                href={ADEX_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex w-full items-center justify-between rounded-[18px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] px-3 py-3 text-left transition hover:border-[var(--surface-border-strong)]"
+              >
+                <div>
+                  <div className="font-semibold text-[var(--text-strong)]">ADEX Palletizer</div>
+                  <div className="text-xs text-[var(--text-soft)]">Planificar embalaje y paletizacion</div>
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-soft)]">
+                  Abrir
+                </span>
+              </a>
             </section>
 
             {showMaritimeTracking && node ? (

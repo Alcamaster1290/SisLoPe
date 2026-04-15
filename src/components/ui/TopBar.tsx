@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import type { MapThemeDepth, MapViewMode, PresentationState } from "@/types/logistics";
 
@@ -84,6 +84,8 @@ export function TopBar({
   onResumePresentation,
   onStopPresentation,
 }: TopBarProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -18 }}
@@ -127,6 +129,7 @@ export function TopBar({
             </div>
           </div>
 
+          {/* Controls — primary row */}
           <div className="flex flex-col gap-2 xl:items-end">
             <div className="flex flex-wrap gap-2">
               <div className="rounded-full border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-1">
@@ -146,47 +149,57 @@ export function TopBar({
               <ControlButton active={themeDepth === "dark"} onClick={onToggleThemeDepth}>
                 {themeDepth === "dark" ? "Modo claro" : "Modo oscuro"}
               </ControlButton>
-              <ControlButton active={showLabels} disabled={viewMode === "density"} onClick={onToggleLabels}>
-                Etiquetas
-              </ControlButton>
-              <ControlButton active={showFlows} disabled={viewMode === "density"} onClick={onToggleFlows}>
-                Flujos
-              </ControlButton>
-              <ControlButton
-                active={showCorridors}
-                disabled={viewMode === "density"}
-                onClick={onToggleCorridors}
-              >
-                Corredores
-              </ControlButton>
-              {showFleetHeatmapControl ? (
-                <ControlButton active={showFleetHeatmap} onClick={onToggleFleetHeatmap}>
-                  Heatmap de flota
-                </ControlButton>
-              ) : null}
               <ControlButton onClick={onResetCamera}>Reiniciar camara</ControlButton>
-              <ControlButton disabled={exportPending} onClick={onExport}>
-                {exportPending ? "Exportando..." : "Exportar PNG"}
+              <ControlButton
+                active={showAdvanced}
+                onClick={() => setShowAdvanced((v) => !v)}
+              >
+                {showAdvanced ? "Menos controles" : "Mas controles"}
               </ControlButton>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {!presentation.active ? (
-                <ControlButton active={false} onClick={onStartPresentation}>
-                  Modo presentacion
+            {/* Controls — secondary row (analytical + export + presentation) */}
+            {showAdvanced ? (
+              <div className="flex flex-wrap gap-2">
+                <ControlButton active={showLabels} disabled={viewMode === "density"} onClick={onToggleLabels}>
+                  Etiquetas
                 </ControlButton>
-              ) : (
-                <>
-                  <ControlButton active={!presentation.paused} onClick={onPausePresentation}>
-                    {presentation.paused ? "Pausado" : "Pausar demo"}
+                <ControlButton active={showFlows} disabled={viewMode === "density"} onClick={onToggleFlows}>
+                  Flujos
+                </ControlButton>
+                <ControlButton
+                  active={showCorridors}
+                  disabled={viewMode === "density"}
+                  onClick={onToggleCorridors}
+                >
+                  Corredores
+                </ControlButton>
+                {showFleetHeatmapControl ? (
+                  <ControlButton active={showFleetHeatmap} onClick={onToggleFleetHeatmap}>
+                    Heatmap de flota
                   </ControlButton>
-                  <ControlButton active={presentation.paused} onClick={onResumePresentation}>
-                    Continuar
+                ) : null}
+                <ControlButton disabled={exportPending} onClick={onExport}>
+                  {exportPending ? "Exportando..." : "Exportar PNG"}
+                </ControlButton>
+
+                {!presentation.active ? (
+                  <ControlButton active={false} onClick={onStartPresentation}>
+                    Modo presentacion
                   </ControlButton>
-                  <ControlButton onClick={onStopPresentation}>Detener</ControlButton>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <ControlButton active={!presentation.paused} onClick={onPausePresentation}>
+                      {presentation.paused ? "Pausado" : "Pausar demo"}
+                    </ControlButton>
+                    <ControlButton active={presentation.paused} onClick={onResumePresentation}>
+                      Continuar
+                    </ControlButton>
+                    <ControlButton onClick={onStopPresentation}>Detener</ControlButton>
+                  </>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
