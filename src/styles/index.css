@@ -127,6 +127,102 @@ a {
   backdrop-filter: blur(20px);
 }
 
+.data-trade-auth-panel {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 1rem 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.data-trade-auth-panel > div:first-child {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.data-trade-auth-panel strong {
+  color: var(--text-strong);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.data-trade-auth-panel span,
+.data-trade-auth-message {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.data-trade-auth-actions,
+.data-trade-auth-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.data-trade-auth-form input {
+  min-height: 2.35rem;
+  width: min(13rem, 100%);
+  border: 1px solid var(--control-border);
+  border-radius: 0.75rem;
+  padding: 0 0.7rem;
+  background: var(--control-bg);
+  color: var(--text-main);
+}
+
+.data-trade-auth-panel button {
+  min-height: 2.35rem;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  padding: 0 0.9rem;
+  background: var(--control-bg);
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.data-trade-auth-link {
+  min-height: auto !important;
+  border: 0 !important;
+  background: transparent !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.data-trade-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  border-radius: 999px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--control-border);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.data-trade-chip.is-ready {
+  color: #126c3d;
+  background: rgba(33, 145, 86, 0.12);
+}
+
+.data-trade-chip.is-pending {
+  color: var(--text-soft);
+}
+
+.data-trade-auth-message {
+  margin: 0;
+}
+
 .control-pill {
   border: 1px solid var(--control-border);
   background: var(--control-bg);
