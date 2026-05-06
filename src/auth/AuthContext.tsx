@@ -11,6 +11,7 @@ import {
   exchangeHandoffCode,
   fetchCurrentSession,
   logoutSession,
+  type AuthSessionPayload,
   type AuthUser,
 } from './authApi'
 
@@ -24,6 +25,28 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+let pendingHandoffCode: string | null = null
+let pendingHandoffExchange: Promise<AuthSessionPayload> | null = null
+
+function clearHandoffFromUrl() {
+  const url = new URL(window.location.href)
+  if (!url.searchParams.has('handoff')) {
+    return
+  }
+
+  url.searchParams.delete('handoff')
+  window.history.replaceState(null, document.title, `${url.pathname}${url.search}${url.hash}`)
+}
+
+function exchangeHandoffOnce(code: string) {
+  if (pendingHandoffCode !== code || !pendingHandoffExchange) {
+    pendingHandoffCode = code
+    pendingHandoffExchange = exchangeHandoffCode(code, 'sislope')
+  }
+
+  return pendingHandoffExchange
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('checking')
@@ -41,10 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const handoffCode = url.searchParams.get('handoff')?.trim()
 
       if (handoffCode) {
-        url.searchParams.delete('handoff')
-        window.history.replaceState(null, document.title, `${url.pathname}${url.search}${url.hash}`)
-
-        return exchangeHandoffCode(handoffCode, 'sislope')
+        const payload = await exchangeHandoffOnce(handoffCode)
+        clearHandoffFromUrl()
+        return payload
       }
 
       return fetchCurrentSession()
