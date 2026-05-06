@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import {
+  exchangeHandoffCode,
   fetchCurrentSession,
   logoutSession,
   type AuthUser,
@@ -35,7 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true
     setStatus('checking')
 
-    fetchCurrentSession()
+    async function resolveSession() {
+      const url = new URL(window.location.href)
+      const handoffCode = url.searchParams.get('handoff')?.trim()
+
+      if (handoffCode) {
+        url.searchParams.delete('handoff')
+        window.history.replaceState(null, document.title, `${url.pathname}${url.search}${url.hash}`)
+
+        return exchangeHandoffCode(handoffCode, 'sislope')
+      }
+
+      return fetchCurrentSession()
+    }
+
+    resolveSession()
       .then((payload) => {
         if (!mounted) return
         setUser(payload.user)
