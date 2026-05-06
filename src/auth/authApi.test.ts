@@ -97,4 +97,34 @@ describe("SisLoPe Data Trade handoff auth", () => {
       }),
     );
   });
+
+  it("trackDataTradeEvent usa Bearer despues del handoff", async () => {
+    vi.stubEnv("VITE_DATA_TRADE_TRACKING_ENABLED", "true");
+    const authApi = await importAuthApi();
+    const fetchMock = vi.fn((input: string) => {
+      if (input.endsWith("/auth/handoff/exchange")) return jsonResponse(authPayload);
+      if (input.endsWith("/events/track")) return jsonResponse({ event: { id: "event-1" } }, 201);
+
+      return jsonResponse({ error: { code: "NOT_MOCKED" } }, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await authApi.exchangeHandoffCode("handoff-code-value-that-is-long-enough");
+    fetchMock.mockClear();
+    await authApi.trackDataTradeEvent("module_opened");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8788/events/track",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer access-token" }),
+        body: JSON.stringify({
+          module: "sislope",
+          eventName: "module_opened",
+          metadata: {},
+          path: window.location.pathname,
+        }),
+      }),
+    );
+  });
 });

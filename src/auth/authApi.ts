@@ -58,9 +58,26 @@ interface ErrorPayload {
 }
 
 const DATA_TRADE_API_URL = normalizeApiUrl(import.meta.env.VITE_DATA_TRADE_API_URL)
+const DATA_TRADE_TRACKING_ENABLED = parseBooleanFlag(import.meta.env.VITE_DATA_TRADE_TRACKING_ENABLED)
+const DATA_TRADE_MODULE_CODE = import.meta.env.VITE_DATA_TRADE_MODULE_CODE?.trim() || 'sislope'
+const ANONYMOUS_ID_STORAGE_KEY = 'sislope_data_trade_anonymous_id'
+const SENSITIVE_METADATA_KEYS = new Set([
+  'authorization',
+  'password',
+  'secret',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'user_id',
+  'userId',
+])
 
 let accessToken: string | null = null
 let refreshToken: string | null = null
+
+function parseBooleanFlag(value: string | undefined): boolean {
+  return value === 'true' || value === '1'
+}
 
 function normalizeApiUrl(value: string | undefined): string {
   return (value ?? '').trim().replace(/\/+$/, '')
@@ -109,6 +126,48 @@ export function clearDataTradeSession() {
 
 export function getDataTradeAccessToken() {
   return accessToken
+}
+
+function createAnonymousId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `anon_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+}
+
+function getAnonymousId() {
+  try {
+    const stored = window.localStorage.getItem(ANONYMOUS_ID_STORAGE_KEY)
+    if (stored) {
+      return stored
+    }
+
+    const next = createAnonymousId()
+    window.localStorage.setItem(ANONYMOUS_ID_STORAGE_KEY, next)
+    return next
+  } catch {
+    return createAnonymousId()
+  }
+}
+
+function sanitizeMetadata(metadata: Record<string, unknown> = {}) {
+  const sanitized: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(metadata).slice(0, 20)) {
+    if (SENSITIVE_METADATA_KEYS.has(key)) {
+      continue
+    }
+
+    if (typeof value === 'string') {
+      sanitized[key.slice(0, 120)] = value.slice(0, 500)
+      continue
+    }
+    if (typeof value === 'number' || typeof value === 'boolean' || value === null) {
+      sanitized[key.slice(0, 120)] = value
+    }
+  }
+
+  return sanitized
 }
 
 async function readErrorPayload(response: Response): Promise<ErrorPayload> {
@@ -240,6 +299,36 @@ export async function exchangeHandoffCode(code: string, targetModule = 'sislope'
   })
 
   return applyDataTradeAuthResponse(response)
+}
+
+export async function trackDataTradeEvent(
+  eventName: 'module_opened' | 'session_started',
+  metadata: Record<string, unknown> = {},
+) {
+  if (!DATA_TRADE_TRACKING_ENABLED || !DATA_TRADE_API_URL) {
+    return { sent: false as const, reason: 'disabled' as const }
+  }
+
+  const body: Record<string, unknown> = {
+    module: DATA_TRADE_MODULE_CODE,
+    eventName,
+    metadata: sanitizeMetadata(metadata),
+    path: window.location.pathname,
+  }
+
+  if (!accessToken) {
+    body.anonymousId = getAnonymousId()
+  }
+
+  try {
+    await requestDataTradeJson<void>('/events/track', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    return { sent: true as const }
+  } catch {
+    return { sent: false as const, reason: 'api_error' as const }
+  }
 }
 
 export async function logoutSession() {

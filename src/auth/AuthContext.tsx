@@ -11,6 +11,7 @@ import {
   exchangeHandoffCode,
   fetchCurrentSession,
   logoutSession,
+  trackDataTradeEvent,
   type AuthSessionPayload,
   type AuthUser,
 } from './authApi'
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 let pendingHandoffCode: string | null = null
 let pendingHandoffExchange: Promise<AuthSessionPayload> | null = null
+const trackedSessionIds = new Set<string>()
 
 function clearHandoffFromUrl() {
   const url = new URL(window.location.href)
@@ -77,6 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return
         setUser(payload.user)
         setStatus('authenticated')
+        if (!trackedSessionIds.has(payload.session.id)) {
+          trackedSessionIds.add(payload.session.id)
+          void trackDataTradeEvent('module_opened')
+        }
       })
       .catch(() => {
         if (!mounted) return
