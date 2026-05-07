@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
   useCallback,
@@ -15,17 +13,7 @@ import {
   type AuthSessionPayload,
   type AuthUser,
 } from './authApi'
-
-type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated'
-
-interface AuthContextValue {
-  status: AuthStatus
-  user: AuthUser | null
-  logout: () => Promise<void>
-  recheck: () => void
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
+import { AuthContext, type AuthStatus } from './authState'
 
 let pendingHandoffCode: string | null = null
 let pendingHandoffExchange: Promise<AuthSessionPayload> | null = null
@@ -55,11 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [recheckKey, setRecheckKey] = useState(0)
 
-  const recheck = useCallback(() => setRecheckKey((k) => k + 1), [])
+  const recheck = useCallback(() => {
+    setStatus('checking')
+    setRecheckKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let mounted = true
-    setStatus('checking')
 
     async function resolveSession() {
       const url = new URL(window.location.href)
@@ -110,10 +100,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider')
-  return ctx
 }

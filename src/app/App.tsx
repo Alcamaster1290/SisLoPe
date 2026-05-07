@@ -17,7 +17,8 @@ import { useMapStore } from "@/store/useMapStore";
 import type { DepartmentId, LogisticsNode, NodeCategory } from "@/types/logistics";
 import { getDepartmentViewPreset, getNodeFocusCamera, getSuggestedPadding } from "@/utils/geo";
 import { CATEGORY_META } from "@/utils/colorScale";
-import { AuthProvider, useAuth } from "@/auth/AuthContext";
+import { AuthProvider } from "@/auth/AuthContext";
+import { useAuth } from "@/auth/authState";
 import { AuthScreen } from "@/auth/AuthScreen";
 
 const LazySidePanel = lazy(() => import("@/components/map/SidePanel"));

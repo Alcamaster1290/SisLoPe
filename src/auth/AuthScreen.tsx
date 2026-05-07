@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loginWithPassword, AuthApiError } from './authApi'
-import { useAuth } from './AuthContext'
+import { useAuth } from './authState'
 
 const ADEX_REGISTER_URL =
   import.meta.env.VITE_ADEX_URL?.trim() || 'https://adex-palletizer.vercel.app'
