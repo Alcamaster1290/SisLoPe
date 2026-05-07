@@ -14,7 +14,7 @@ La aplicacion mantiene separacion clara de responsabilidad. El componente princi
 
 ## Modelo tipado y clases funcionales
 
-El contrato tipado central nace en `src/types/logistics.ts`. La clase conceptual de categoria nodal incluye `port_sea`, `port_river`, `airport`, `border`, `freezone`, `inland_hub` y `corridor_anchor`. El nivel estrategico se expresa con `national`, `regional` y `complementary`. La macrozona contempla `north`, `center`, `south`, `amazon` y `border`. El terreno contempla `coast`, `highlands`, `jungle` y `lake`. El contrato de flujo adopta `land`, `sea` y `river`, con importancia `primary` y `secondary`.
+El contrato tipado central nace en `src/types/logistics.ts`. La clase conceptual de categoria nodal incluye `port_sea`, `port_river`, `airport`, `border`, `freezone`, `inland_hub` y `corridor_anchor`. El nivel estrategico se expresa con `national`, `regional` y `complementary`. La macrozona contempla `north`, `center`, `south`, `amazon` y `border`. El terreno contempla `coast`, `highlands`, `jungle` y `lake`. El contrato de flujo adopta `land`, `sea`, `river` y `air`, con importancia `primary` y `secondary`.
 
 El estado global formaliza filtros activos, departamento seleccionado, departamento en hover, modo de vista, profundidad de tema, visibilidad de etiquetas, visibilidad de flujos, visibilidad de corredores, nodo en hover, nodo seleccionado, salud de render por subsistema y secuencia de presentacion. El contrato de salud de render diferencia `maplibre`, `deck` y `three`, con estados agregados `loading`, `ready`, `degraded` y `failed`.
 
@@ -44,7 +44,7 @@ La clase `corridor_anchor` permanece disponible en el modelo para escenarios de 
 
 ## Red oficial de flujos y corredores
 
-La coleccion de flujos contiene veintidos rutas iniciales. El modo terrestre integra Callao hacia Jorge Chavez, Callao hacia Lurin, Callao hacia La Oroya, Paita hacia ZED Paita, Paita hacia Piura, Paita hacia Cajamarca / Trepaderas, Salaverry hacia Trujillo, Salaverry hacia Cajamarca / Trepaderas, Matarani hacia Arequipa, Matarani hacia Juliaca, Matarani hacia Desaguadero, Ilo hacia ZED Ilo, Ilo hacia Moquegua, Ilo hacia Santa Rosa, ZOFRATACNA hacia Santa Rosa, Pucallpa hacia La Oroya, Puerto Maldonado hacia Inapari, Cusco hacia Puerto Maldonado y Juliaca hacia Desaguadero.
+La coleccion de flujos base contiene cincuenta rutas iniciales. El modo terrestre se limita a corredores entre nodos de categoria `aduana`: Callao Maritima hacia Callao Aerea, Tumbes hacia Paita, Paita hacia La Tina, Paita hacia Chiclayo, Chiclayo hacia Salaverry, Salaverry hacia Chimbote, Chimbote hacia Chancay, Chancay hacia Callao Maritima, Callao Maritima hacia Pisco, Pisco hacia Arequipa, Arequipa hacia Mollendo, Mollendo hacia Ilo, Ilo hacia Tacna, Tacna hacia Santa Rosa, Arequipa hacia Puno, Puno hacia Desaguadero, Arequipa hacia Cusco y Cusco hacia Puerto Maldonado.
 
 El modo maritimo integra Callao hacia Chancay. El modo fluvial integra Iquitos hacia Nauta e Iquitos hacia Yurimaguas. Cada flujo conserva identificador, origen, destino, modo, importancia, animacion y bidireccionalidad cuando aplica.
 

@@ -25,6 +25,102 @@ function w(a: string, b: string, pts: readonly Coord[]): void {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CORREDORES TERRESTRES ADUANA -> ADUANA
+w('aduana-callao-maritima', 'aduana-callao-aerea', [
+  [-77.12, -12.04],
+])
+
+w('aduana-tumbes', 'aduana-paita', [
+  [-80.52, -4.20],
+  [-80.69, -4.90],
+  [-80.63, -5.19],
+])
+
+w('aduana-paita', 'aduana-la-tina', [
+  [-80.63, -5.19],
+  [-80.47, -4.90],
+  [-79.99, -4.64],
+])
+
+w('aduana-paita', 'aduana-chiclayo', [
+  [-80.63, -5.19],
+  [-80.02, -5.98],
+])
+
+w('aduana-chiclayo', 'aduana-salaverry', [
+  [-79.30, -7.56],
+  [-79.02, -8.08],
+])
+
+w('aduana-salaverry', 'aduana-chimbote', [
+  [-78.65, -8.84],
+])
+
+w('aduana-chimbote', 'aduana-chancay', [
+  [-78.18, -10.06],
+  [-77.78, -10.79],
+  [-77.52, -11.10],
+])
+
+w('aduana-chancay', 'aduana-callao-maritima', [
+  [-77.18, -11.77],
+  [-77.12, -11.88],
+])
+
+w('aduana-callao-maritima', 'aduana-pisco', [
+  [-76.58, -12.55],
+  [-76.39, -13.08],
+  [-75.75, -13.42],
+])
+
+w('aduana-pisco', 'aduana-arequipa', [
+  [-75.73, -14.07],
+  [-74.94, -14.83],
+  [-74.23, -15.84],
+  [-72.71, -16.62],
+])
+
+w('aduana-arequipa', 'aduana-mollendo', [
+  [-71.76, -16.78],
+])
+
+w('aduana-mollendo', 'aduana-ilo', [
+  [-71.34, -17.64],
+  [-70.97, -17.14],
+])
+
+w('aduana-ilo', 'aduana-tacna', [
+  [-70.97, -17.14],
+  [-70.35, -17.54],
+  [-70.27, -17.93],
+])
+
+w('aduana-tacna', 'aduana-santa-rosa', [
+  [-70.26, -18.21],
+])
+
+w('aduana-arequipa', 'aduana-puno', [
+  [-71.08, -15.38],
+  [-70.73, -15.62],
+  [-70.02, -15.84],
+])
+
+w('aduana-puno', 'aduana-desaguadero', [
+  [-69.47, -16.13],
+])
+
+w('aduana-arequipa', 'aduana-cusco', [
+  [-71.08, -15.38],
+  [-70.73, -15.21],
+  [-71.06, -14.85],
+])
+
+w('aduana-cusco', 'aduana-puerto-maldonado', [
+  [-71.62, -13.69],
+  [-70.74, -13.22],
+  [-70.04, -12.95],
+])
+
 // CARRETERA CENTRAL — Callao → La Oroya → sierra / selva central
 // ─────────────────────────────────────────────────────────────────────────────
 // Ruta 22: Callao → Chosica → Matucana → Casapalca → La Oroya

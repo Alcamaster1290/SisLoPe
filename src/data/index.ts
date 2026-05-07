@@ -34,6 +34,7 @@ function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFl
     for (const targetId of sourceNode.connections ?? []) {
       const targetNode = nodeMap.get(targetId);
       if (!targetNode) continue;
+      if (sourceNode.category !== "aduana" || targetNode.category !== "aduana") continue;
 
       const pairKey = buildPairKey(sourceNode.id, targetId);
       if (existingPairs.has(pairKey) || addedLandPairs.has(pairKey)) {
