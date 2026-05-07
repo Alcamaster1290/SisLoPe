@@ -44,7 +44,7 @@ export const INITIAL_CAMERA_STATE: MapCameraState = {
   bearing: 0,
 };
 
-export const FLOW_ANIMATION_CYCLE_MS = 520;
+export const FLOW_ANIMATION_CYCLE_MS = 1040;
 
 export const DEFAULT_CAMERA_PADDING: CameraPadding = {
   top: 92,

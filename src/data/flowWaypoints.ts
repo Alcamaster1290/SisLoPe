@@ -25,29 +25,43 @@ function w(a: string, b: string, pts: readonly Coord[]): void {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CORREDOR CENTRAL — Carretera Central (Lima/Callao → La Oroya → Pucallpa)
+// CARRETERA CENTRAL — Callao → La Oroya → sierra / selva central
 // ─────────────────────────────────────────────────────────────────────────────
-// Route 22: Lima → Chosica → Matucana → San Mateo → La Oroya
+// Ruta 22: Callao → Chosica → Matucana → Casapalca → La Oroya
 w('callao', 'la-oroya', [
-  [-76.71, -12.01],  // Chosica / Chaclacayo junction
+  [-76.71, -12.01],  // Chosica / Chaclacayo
   [-76.40, -11.84],  // Matucana
-  [-76.22, -11.91],  // San Mateo / Casapalca pass
+  [-76.22, -11.91],  // San Mateo / Casapalca pass (~4 200 m)
 ])
 
-// La Oroya → Tarma → La Merced → Huánuco → Tingo María → Pucallpa
+// La Oroya → Cerro de Pasco → Huánuco → Tingo María → Aguaytía → Pucallpa
+// (rama norte de la Carretera Central; NO pasa por Tarma/La Merced)
 w('la-oroya', 'pucallpa-port', [
-  [-75.69, -11.42],  // Tarma
-  [-75.32, -11.05],  // La Merced (Valle del Perené)
+  [-76.26, -10.69],  // Cerro de Pasco
   [-76.24, -9.93],   // Huánuco
   [-75.99, -9.30],   // Tingo María
   [-74.99, -8.85],   // Aguaytía
+])
+
+// La Oroya → Concepción → Huancayo (Mantaro valley, ~60 km)
+w('la-oroya', 'huancayo-hub', [
+  [-75.55, -11.65],  // Concepción
+])
+
+// Callao → La Oroya → Huancayo (no waypoints directos → via La Oroya)
+w('callao', 'huancayo-hub', [
+  [-76.71, -12.01],  // Chosica
+  [-76.40, -11.84],  // Matucana
+  [-76.22, -11.91],  // Casapalca
+  [-75.90, -11.52],  // La Oroya
+  [-75.55, -11.65],  // Concepción
 ])
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PANAMERICANA NORTE — Ruta 1N (Lima → Trujillo → Chiclayo → Piura → Tumbes)
 // ─────────────────────────────────────────────────────────────────────────────
 w('callao', 'chancay', [
-  [-77.22, -11.86],  // Huacho area (coast highway)
+  [-77.22, -11.86],  // Huacho area
 ])
 
 w('chancay', 'chimbote', [
@@ -57,30 +71,52 @@ w('chancay', 'chimbote', [
 ])
 
 w('chimbote', 'trujillo-hub', [
-  [-78.65, -8.84],   // Virú corridor
+  [-78.65, -8.84],   // Virú
 ])
 
 w('salaverry', 'trujillo-hub', [
-  [-79.01, -8.10],   // Trujillo city approach
+  [-79.01, -8.10],   // Trujillo ciudad
 ])
 
 w('trujillo-hub', 'chiclayo-hub', [
-  [-79.30, -7.56],   // Guadalupe / Pacasmayo vicinity
-  [-79.72, -7.16],   // Between Chiclayo and Trujillo
+  [-79.30, -7.56],   // Guadalupe / Pacasmayo
+  [-79.72, -7.16],   // Entre Chiclayo y Trujillo
 ])
 
 w('chiclayo-hub', 'piura-hub', [
-  [-80.02, -5.98],   // Olmos pass
+  [-80.02, -5.98],   // Olmos
 ])
 
 w('piura-hub', 'aguas-verdes-cebaf', [
   [-80.69, -4.90],   // Sullana
-  [-80.52, -4.20],   // Zarumilla approach
+  [-80.52, -4.20],   // Zarumilla
 ])
 
 w('la-tina', 'piura-hub', [
   [-79.99, -4.64],   // Suyo / Las Lomas
-  [-80.47, -4.90],   // Highway junction
+  [-80.47, -4.90],   // Empalme con ruta a Sullana
+])
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORREDOR NORTE ANDINO — Piura / Paita → Cajamarca → costa norte
+// ─────────────────────────────────────────────────────────────────────────────
+// Ruta principal: Paita → Piura → Chiclayo → Cajamarca (Ruta 3N)
+// NO pasa por Jaén (ese es un ramal norte más largo)
+w('paita', 'cajamarca-trepaderas', [
+  [-80.63, -5.19],   // Piura ciudad
+  [-79.84, -6.77],   // Chiclayo
+  [-79.18, -7.02],   // Chongoyape / entrada sierra
+])
+
+// Cajamarca → Trujillo / Salaverry (Ruta 3 sur: Otuzco)
+w('cajamarca-trepaderas', 'salaverry', [
+  [-78.59, -8.06],   // Otuzco
+])
+
+// Cajamarca → La Tina (ruta frontera Ecuador vía Jaén / San Ignacio)
+w('cajamarca-trepaderas', 'la-tina', [
+  [-78.99, -5.57],   // San Ignacio
+  [-79.48, -4.87],   // Foothills de Ayabaca
 ])
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,68 +124,75 @@ w('la-tina', 'piura-hub', [
 // ─────────────────────────────────────────────────────────────────────────────
 w('callao', 'general-san-martin', [
   [-76.58, -12.55],  // Cañete / San Vicente
-  [-76.39, -13.08],  // Cañete south
+  [-76.39, -13.08],  // Cañete sur
   [-75.75, -13.42],  // Chincha Alta
 ])
 
 w('general-san-martin', 'ica-hub', [
-  [-76.11, -13.71],  // Pisco city
+  [-76.11, -13.71],  // Pisco ciudad
 ])
 
 w('ica-hub', 'marcona', [
   [-75.73, -14.83],  // Nazca
-  [-75.16, -15.37],  // San Juan de Marcona approach
+  [-75.16, -15.37],  // San Juan de Marcona
+])
+
+// Arequipa → Camaná (costa) → Nazca → Marcona
+w('arequipa-hub', 'marcona', [
+  [-72.71, -16.62],  // Camaná (empalme costero)
+  [-74.23, -15.84],  // Chala
+  [-75.16, -15.37],  // Marcona
 ])
 
 w('ica-hub', 'matarani', [
   [-74.94, -14.83],  // Nazca
-  [-73.25, -15.92],  // Camaná area
+  [-73.25, -15.92],  // Norte de Camaná
   [-72.71, -16.62],  // Camaná
 ])
 
 w('matarani', 'arequipa-hub', [
   [-71.76, -16.78],  // Repartición / Patahuasi
-  [-71.57, -16.41],  // Approaching Arequipa
+  [-71.57, -16.41],  // Entrando a Arequipa
 ])
 
 w('arequipa-hub', 'juliaca-hub', [
-  [-71.08, -15.38],  // Imata (4,500 m pass)
-  [-70.73, -15.62],  // Approaching Juliaca
+  [-71.08, -15.38],  // Imata (paso 4 500 m)
+  [-70.73, -15.62],  // Aproximación Juliaca
 ])
 
 w('juliaca-hub', 'desaguadero', [
-  [-70.02, -15.84],  // Puno city
+  [-70.02, -15.84],  // Puno ciudad
   [-69.47, -16.13],  // Ilave
 ])
 
 w('arequipa-hub', 'moquegua-hub', [
-  [-71.18, -16.84],  // Pampa Blanca / Toquepala pass
+  [-71.18, -16.84],  // Pampa Blanca / Toquepala
 ])
 
 w('moquegua-hub', 'ilo', [
-  [-70.97, -17.14],  // Moquegua to Ilo descent
+  [-70.97, -17.14],  // Descenso Moquegua → Ilo
 ])
 
 w('ilo', 'zofratacna', [
-  [-70.35, -17.54],  // Ilo → Tacna coastal highway
-  [-70.27, -17.93],  // Approaching Tacna
+  [-70.35, -17.54],  // Costanera Ilo → Tacna
+  [-70.27, -17.93],  // Ingreso Tacna
 ])
 
 w('ilo', 'santa-rosa', [
   [-70.35, -17.54],
-  [-70.28, -17.92],  // Tacna outskirts
+  [-70.28, -17.92],  // Periferia Tacna
 ])
 
 w('zofratacna', 'santa-rosa', [
-  [-70.26, -18.21],  // ZOFRATACNA → Santa Rosa (Tacna border complex)
+  [-70.26, -18.21],  // ZOFRATACNA → complejo fronterizo Santa Rosa
 ])
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INTEROCEÁNICA SUR — Ruta 26 (Cusco → Puerto Maldonado → Iñapari → Brazil)
+// INTEROCEÁNICA SUR — Ruta 26 (Cusco → Puerto Maldonado → Iñapari → Brasil)
 // ─────────────────────────────────────────────────────────────────────────────
 w('cusco-hub', 'puerto-maldonado-port', [
   [-71.62, -13.69],  // Urcos
-  [-70.74, -13.22],  // Quince Mil (jungle descent)
+  [-70.74, -13.22],  // Quince Mil (bajada a selva)
   [-70.04, -12.95],  // Mazuko
 ])
 
@@ -157,60 +200,41 @@ w('inapari', 'puerto-maldonado-port', [
   [-69.50, -11.40],  // Iberia
 ])
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CORREDOR NORTE ANDINO (Paita / Piura → Cajamarca → Trujillo)
-// ─────────────────────────────────────────────────────────────────────────────
-w('paita', 'cajamarca-trepaderas', [
-  [-80.63, -5.19],   // Piura city
-  [-79.75, -6.00],   // Olmos
-  [-78.80, -5.71],   // Jaén
+// Cusco → Iñapari (ruta directa: via Puerto Maldonado)
+w('cusco-hub', 'inapari', [
+  [-71.62, -13.69],  // Urcos
+  [-70.74, -13.22],  // Quince Mil
+  [-70.04, -12.95],  // Mazuko
+  [-69.19, -12.59],  // Puerto Maldonado
+  [-69.50, -11.40],  // Iberia
 ])
 
-w('cajamarca-trepaderas', 'salaverry', [
-  [-78.51, -7.16],   // Contumaza / Tembladera junction
-  [-78.59, -8.06],   // Otuzco
-])
-
-w('cajamarca-trepaderas', 'la-tina', [
-  [-78.99, -5.57],   // San Ignacio
-  [-79.48, -4.87],   // Ayabaca foothills
-])
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AMAZONIA NORTE — Corredor Yurimaguas / Tarapoto
-// ─────────────────────────────────────────────────────────────────────────────
-w('tarapoto-airport', 'yurimaguas', [
-  [-76.50, -6.24],   // Highway descending to Yurimaguas
-])
-
-w('moyobamba-hub', 'tarapoto-airport', [
-  [-76.64, -6.22],   // Highway Moyobamba → Tarapoto
-])
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PUNO / ALTIPLANO — Sur andino
-// ─────────────────────────────────────────────────────────────────────────────
-w('puno-port', 'juliaca-hub', [
-  [-70.07, -15.70],  // Puno → Juliaca (short highway)
-])
-
-w('juliaca-hub', 'kasani', [
-  [-69.56, -15.95],  // Juliaca → Kasani (Titicaca shore road)
-])
-
+// Cusco → Juliaca → sur andino
 w('cusco-hub', 'juliaca-hub', [
-  [-71.06, -14.85],  // Sicuani area
+  [-71.06, -14.85],  // Sicuani
   [-70.73, -15.21],  // Ayaviri
 ])
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HUARMEY / CHIMBOTE lateral
+// PUNO / ALTIPLANO — Titicaca y corredor Bolivia
 // ─────────────────────────────────────────────────────────────────────────────
-w('huarmey', 'la-oroya', [
-  [-77.51, -10.31],  // Pativilca junction (Pan-Am)
-  [-77.29, -10.70],  // Highway heading inland to Huaraz / La Oroya
-  [-76.84, -11.10],  // Recuay area
-  [-76.47, -11.50],  // Carhuaz / Approaching La Oroya via Recuay
+w('puno-port', 'juliaca-hub', [
+  [-70.07, -15.70],  // Puno → Juliaca
+])
+
+w('juliaca-hub', 'kasani', [
+  [-69.56, -15.95],  // Orilla del Titicaca hacia Kasani
+])
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AMAZONIA NORTE — Corredor Tarapoto / Yurimaguas
+// ─────────────────────────────────────────────────────────────────────────────
+w('tarapoto-airport', 'yurimaguas', [
+  [-76.50, -6.24],   // Descenso a Yurimaguas
+])
+
+w('moyobamba-hub', 'tarapoto-airport', [
+  [-76.64, -6.22],   // Moyobamba → Tarapoto
 ])
 
 export const FLOW_WAYPOINTS: ReadonlyMap<WaypointKey, readonly Coord[]> = W
