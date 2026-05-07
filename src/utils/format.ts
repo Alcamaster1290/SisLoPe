@@ -10,7 +10,7 @@ import type { FlowMode, Macrozone, StrategicLevel, Terrain } from "@/types/logis
 
 export function formatCoordinate(value: number, axis: "lat" | "lon"): string {
   const suffix = axis === "lat" ? (value >= 0 ? "N" : "S") : value >= 0 ? "E" : "O";
-  return `${Math.abs(value).toFixed(4)} deg ${suffix}`;
+  return `${Math.abs(value).toFixed(4)}° ${suffix}`;
 }
 
 export function formatLocation(node: LogisticsNode): string {
