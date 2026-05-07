@@ -1,21 +1,13 @@
-# SisLoPe Maritime API
+# maritime-api
 
-Servicio ligero de lectura y administracion maritima para SisLoPe. Expone read models desacoplados para tracking por embarque/buque y heatmap diario de flota maritima/fluvial.
+Servicio ligero de lectura y administracion maritima para SisLoPe. Expone dos read-models desacoplados:
 
-Es un backend de dominio maritimo, no el backend general de Data Trade.
+- tracking por embarque/buque
+- heatmap diario de flota maritima/fluvial
 
-## Estado Actual
+El servicio no consulta proveedores AIS desde requests de usuario. La sincronizacion pesada entra por scripts o workers externos.
 
-- Runtime: Node.js + Fastify.
-- Base de datos: PostgreSQL.
-- ORM/migraciones: Drizzle.
-- Dominio: tracking por embarque/buque y heatmap diario maritimo/fluvial.
-- Deploy previsto: Railway, separado del frontend Vercel.
-- Integracion Data Trade: futura via eventos/ETL si se requiere trazabilidad central.
-
-El servicio no consulta proveedores AIS desde requests de usuario. Las cargas pesadas entran por scripts o workers.
-
-## Desarrollo Local
+## Desarrollo local
 
 ```bash
 npm install
@@ -24,7 +16,7 @@ npm run dev
 
 Variables requeridas:
 
-```text
+```bash
 DATABASE_URL=postgres://...
 MARITIME_ADMIN_API_KEY=...
 FRONTEND_ORIGIN=http://localhost:5173
@@ -38,31 +30,26 @@ npm run test
 npm run build
 npm run db:generate
 npm run db:migrate
-npm run db:studio
 npm run heatmap:import -- examples/heatmap-snapshot.example.json
 npm run heatmap:sync:gfw
 npm run heatmap:sync:gfw:dry-run
 ```
 
-## Heatmap Diario GFW
+## Heatmap diario GFW
 
-Fuente inicial recomendada:
-
-```text
-Global Fishing Watch / public-global-presence:latest
-```
+La fuente inicial recomendada es `Global Fishing Watch / public-global-presence:latest`.
 
 El sync diario:
 
 1. descarga una capa agregada oficial
-2. agrega a H3
+2. la agrega a H3
 3. persiste solo celdas diarias resumidas
 
 No guarda posiciones AIS crudas por barco.
 
-Variables del worker:
+Variables relevantes del worker:
 
-```text
+```bash
 GFW_API_TOKEN=
 GFW_HEATMAP_LAG_DAYS=4
 GFW_HEATMAP_H3_RESOLUTION=5
@@ -70,29 +57,19 @@ GFW_HEATMAP_SPATIAL_RESOLUTION=LOW
 GFW_HEATMAP_VESSEL_TYPES=
 ```
 
-Validar fuente sin tocar PostgreSQL:
+Si quieres validar la fuente sin tocar Postgres:
 
 ```bash
 npm run heatmap:sync:gfw:dry-run
 ```
 
-## Deploy
+## Despliegue
 
-- Runtime previsto: Railway.
-- Base de datos: PostgreSQL gestionado en Railway.
-- Root directory: `services/maritime-api`.
-- API service config: `railway.api.json`.
-- Worker/cron config: `railway.worker.json`.
-- `railway.json` queda como alias del API.
-- Checklist: `../../docs/RAILWAY_MARITIME_HEATMAP_DEPLOY.md`.
-- El frontend Vercel no debe consumir el servicio hasta validar datos y cobertura en preview.
-
-## Relacion Con Data Trade API
-
-`apps/api` es el backend comun para identidad, sesiones, eventos y admin. `maritime-api` debe mantenerse separado porque su dominio, jobs y datos son maritimos.
-
-Posibles integraciones futuras:
-
-- emitir eventos agregados a `apps/api /events/track`
-- registrar fuentes en `data_trade.data_sources`
-- exponer metricas operativas al dashboard admin si el modulo SisLoPe lo requiere
+- Runtime previsto: Railway
+- Base de datos: Postgres gestionado en Railway
+- `rootDir`: `services/maritime-api`
+- Archivo API: `services/maritime-api/railway.api.json`
+- Archivo worker/cron: `services/maritime-api/railway.worker.json`
+- `services/maritime-api/railway.json` queda como alias del API
+- Checklist completa: `docs/RAILWAY_MARITIME_HEATMAP_DEPLOY.md`
+- El frontend Vercel no debe consumir el servicio hasta validar datos y cobertura en preview
