@@ -116,10 +116,10 @@ export function FiltersPanel({
       <div className="border-b border-[var(--surface-border)] px-4 py-4 lg:px-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
+            <div className="font-[var(--font-display)] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
               Exploracion
             </div>
-            <h2 className="mt-2 font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+            <h2 className="mt-2 font-[var(--font-display)] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
               Filtros y busqueda
             </h2>
           </div>
@@ -127,7 +127,7 @@ export function FiltersPanel({
             <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
               Cobertura
             </div>
-            <div className="mt-1 font-['Rajdhani'] text-lg font-semibold tracking-[0.08em] text-[var(--text-strong)]">
+            <div className="mt-1 font-[var(--font-display)] text-lg font-semibold tracking-[0.08em] text-[var(--text-strong)]">
               {filteredCount}/{totalCount}
             </div>
           </div>

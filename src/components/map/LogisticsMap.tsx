@@ -1351,7 +1351,7 @@ export function LogisticsMap({
       <div className={atmosphereClass} />
       {effectiveViewMode === "emphasis3d" ? (
         <div className="pointer-events-none absolute left-5 top-36 z-20 max-w-[20rem] rounded-[20px] border border-[var(--surface-border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-soft)] backdrop-blur-lg">
-          <div className="font-['Rajdhani'] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">
+          <div className="font-[var(--font-display)] text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-soft)]">
             Modo enfasis 3D
           </div>
           <p className="mt-1 text-xs leading-5 text-[var(--text-main)]">

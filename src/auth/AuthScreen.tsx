@@ -61,7 +61,7 @@ export function AuthScreen() {
         {/* Header */}
         <p
           style={{
-            fontFamily: '"Rajdhani", sans-serif',
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
             fontSize: '0.7rem',
             letterSpacing: '0.18em',
@@ -75,7 +75,7 @@ export function AuthScreen() {
 
         <h1
           style={{
-            fontFamily: '"Rajdhani", sans-serif',
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
             fontSize: '1.65rem',
             lineHeight: 1.15,
@@ -212,7 +212,7 @@ export function AuthScreen() {
             style={{
               width: '100%',
               padding: '0.7rem',
-              fontFamily: '"Rajdhani", sans-serif',
+              fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: '0.95rem',
               letterSpacing: '0.04em',
@@ -254,7 +254,7 @@ export function AuthScreen() {
               display: 'inline-block',
               width: '100%',
               padding: '0.55rem 0.75rem',
-              fontFamily: '"Rajdhani", sans-serif',
+              fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: '0.88rem',
               color: 'rgba(146, 30, 30, 0.9)',

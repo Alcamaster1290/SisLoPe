@@ -38,7 +38,7 @@ function AppWithAuth() {
       >
         <p
           style={{
-            fontFamily: '"Rajdhani", sans-serif',
+            fontFamily: "var(--font-display)",
             fontSize: "1.2rem",
             fontWeight: 600,
             color: "var(--text-main)",
@@ -461,7 +461,7 @@ function AppContent() {
               <Suspense
                 fallback={
                   <aside className="panel-shell min-h-[18rem] rounded-[28px] px-5 py-5">
-                    <div className="font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+                    <div className="font-[var(--font-display)] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
                       Cargando panel
                     </div>
                   </aside>
@@ -482,7 +482,7 @@ function AppContent() {
           <Suspense
             fallback={
               <aside className="panel-shell order-3 min-h-[18rem] rounded-[28px] px-5 py-5 lg:min-h-0">
-                <div className="font-['Rajdhani'] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+                <div className="font-[var(--font-display)] text-xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
                   Cargando panel
                 </div>
               </aside>

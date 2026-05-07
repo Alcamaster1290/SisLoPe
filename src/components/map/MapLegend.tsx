@@ -52,7 +52,7 @@ export function MapLegend({
   return (
     <div className="panel-shell pointer-events-auto max-w-[11.5rem] rounded-[18px] px-2.5 py-2.5 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between gap-3">
-        <div className="font-['Rajdhani'] text-[9px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+        <div className="font-[var(--font-display)] text-[9px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
           Leyenda operativa
         </div>
         <div className="flex items-center gap-1">
@@ -100,7 +100,7 @@ export function MapLegend({
                       {meta.label}
                     </span>
                   </div>
-                  <span className="font-['Rajdhani'] text-sm font-semibold text-[var(--text-strong)]">
+                  <span className="font-[var(--font-display)] text-sm font-semibold text-[var(--text-strong)]">
                     {visibleCounts[category]}
                   </span>
                 </button>

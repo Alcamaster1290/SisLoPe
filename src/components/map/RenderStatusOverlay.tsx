@@ -61,10 +61,10 @@ export function RenderStatusOverlay({
         transition={{ duration: 0.28 }}
         className="panel-shell-strong pointer-events-auto max-w-md rounded-[28px] px-5 py-5"
       >
-        <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
+        <div className="font-[var(--font-display)] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
           Estado del render
         </div>
-        <h3 className="mt-3 font-['Rajdhani'] text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
+        <h3 className="mt-3 font-[var(--font-display)] text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
           {copy.title}
         </h3>
         <p className="mt-3 text-sm leading-6 text-[var(--text-main)]">{copy.description}</p>

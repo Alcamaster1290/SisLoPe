@@ -1,7 +1,13 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
+  /* Geneva-first stack with widely-installed fallbacks. Geneva exists on macOS;
+     Windows/Linux fall back to Lucida Sans Unicode → Verdana → Tahoma, which
+     visually preserve Geneva's humanist sans-serif feel. */
+  --font-display:
+    "Geneva", "Lucida Sans Unicode", "Lucida Grande", "Verdana", "Tahoma",
+    "Helvetica", sans-serif;
+
   color-scheme: light;
   --app-bg: #f8f1ef;
   --app-bg-deep: #f2e4e1;
@@ -59,7 +65,7 @@ body,
 
 body {
   margin: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-display);
   background:
     radial-gradient(circle at 12% 20%, rgba(171, 44, 44, 0.16), transparent 34%),
     radial-gradient(circle at 88% 18%, rgba(255, 227, 227, 0.44), transparent 32%),

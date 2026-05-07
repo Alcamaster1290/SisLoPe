@@ -97,10 +97,10 @@ export function TopBar({
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:gap-6">
             <div className="min-w-0">
-              <div className="font-['Rajdhani'] text-[0.72rem] font-semibold uppercase tracking-[0.42em] text-[var(--text-soft)]">
+              <div className="font-[var(--font-display)] text-[0.72rem] font-semibold uppercase tracking-[0.42em] text-[var(--text-soft)]">
                 SISLOPE / Centro de Comando Logistico del Peru
               </div>
-              <h1 className="mt-2 font-['Rajdhani'] text-2xl font-semibold uppercase tracking-[0.12em] text-[var(--text-strong)] lg:text-[2rem]">
+              <h1 className="mt-2 font-[var(--font-display)] text-2xl font-semibold uppercase tracking-[0.12em] text-[var(--text-strong)] lg:text-[2rem]">
                 Sistema logistico y aduanero del Peru
               </h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-soft)]">
@@ -114,7 +114,7 @@ export function TopBar({
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
                   Nodos visibles
                 </div>
-                <div className="mt-1 font-['Rajdhani'] text-xl font-semibold tracking-[0.08em] text-[var(--text-strong)]">
+                <div className="mt-1 font-[var(--font-display)] text-xl font-semibold tracking-[0.08em] text-[var(--text-strong)]">
                   {visibleNodeCount}
                 </div>
               </div>
@@ -122,7 +122,7 @@ export function TopBar({
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
                   Flujos activos
                 </div>
-                <div className="mt-1 font-['Rajdhani'] text-xl font-semibold tracking-[0.08em] text-[var(--text-strong)]">
+                <div className="mt-1 font-[var(--font-display)] text-xl font-semibold tracking-[0.08em] text-[var(--text-strong)]">
                   {visibleFlowCount}
                 </div>
               </div>

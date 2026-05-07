@@ -404,7 +404,7 @@ export function createNodeLayers({
       visible: showNodeSymbols && showLabels,
       pickable: false,
       billboard: true,
-      fontFamily: "Rajdhani, sans-serif",
+      fontFamily: 'Geneva, "Lucida Sans Unicode", "Lucida Grande", Verdana, Tahoma, sans-serif',
       fontWeight: 700,
       characterSet: "auto",
       getPosition: (entry) => entry.labelPosition,
