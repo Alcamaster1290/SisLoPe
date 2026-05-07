@@ -44,7 +44,7 @@ La clase `corridor_anchor` permanece disponible en el modelo para escenarios de 
 
 ## Red oficial de flujos y corredores
 
-La coleccion de flujos base contiene cincuenta rutas iniciales. El modo terrestre se limita a corredores entre nodos de categoria `aduana`: Callao Maritima hacia Callao Aerea, Tumbes hacia Paita, Paita hacia La Tina, Paita hacia Chiclayo, Chiclayo hacia Salaverry, Salaverry hacia Chimbote, Chimbote hacia Chancay, Chancay hacia Callao Maritima, Callao Maritima hacia Pisco, Pisco hacia Arequipa, Arequipa hacia Mollendo, Mollendo hacia Ilo, Ilo hacia Tacna, Tacna hacia Santa Rosa, Arequipa hacia Puno, Puno hacia Desaguadero, Arequipa hacia Cusco y Cusco hacia Puerto Maldonado.
+La coleccion de flujos base contiene setenta y ocho rutas iniciales. El modo terrestre se limita a corredores entre nodos de categoria `aduana` e `inland_hub`, de modo que la red integre aduanas, centros interiores de consolidacion y corredores terrestres troncales sin usar puertos, aeropuertos, zonas francas ni pasos fronterizos como extremos de flujo terrestre.
 
 El modo maritimo integra Callao hacia Chancay. El modo fluvial integra Iquitos hacia Nauta e Iquitos hacia Yurimaguas. Cada flujo conserva identificador, origen, destino, modo, importancia, animacion y bidireccionalidad cuando aplica.
 

@@ -121,6 +121,131 @@ w('aduana-cusco', 'aduana-puerto-maldonado', [
   [-70.04, -12.95],
 ])
 
+// CORREDORES TERRESTRES ADUANA / HUB INTERIOR
+w('aduana-tumbes', 'sullana-hub', [
+  [-80.52, -4.20],
+])
+
+w('aduana-paita', 'piura-hub', [
+  [-80.63, -5.19],
+])
+
+w('aduana-la-tina', 'piura-hub', [
+  [-79.99, -4.64],
+  [-80.47, -4.90],
+])
+
+w('sullana-hub', 'piura-hub', [
+  [-80.63, -5.19],
+])
+
+w('piura-hub', 'chiclayo-hub', [
+  [-80.02, -5.98],
+])
+
+w('piura-hub', 'cajamarca-trepaderas', [
+  [-79.84, -6.77],
+  [-79.18, -7.02],
+])
+
+w('chiclayo-hub', 'trujillo-hub', [
+  [-79.30, -7.56],
+])
+
+w('trujillo-hub', 'cajamarca-trepaderas', [
+  [-78.59, -8.06],
+])
+
+w('aduana-salaverry', 'trujillo-hub', [
+  [-79.01, -8.10],
+])
+
+w('aduana-chiclayo', 'chiclayo-hub', [
+  [-79.84, -6.77],
+])
+
+w('aduana-chimbote', 'trujillo-hub', [
+  [-78.65, -8.84],
+])
+
+w('aduana-callao-maritima', 'lurin', [
+  [-77.04, -12.14],
+  [-76.95, -12.22],
+])
+
+w('lurin', 'ves', [
+  [-76.90, -12.24],
+])
+
+w('aduana-callao-maritima', 'la-oroya', [
+  [-76.71, -12.01],
+  [-76.40, -11.84],
+  [-76.22, -11.91],
+])
+
+w('aduana-pucallpa', 'la-oroya', [
+  [-74.99, -8.85],
+  [-75.99, -9.30],
+  [-76.24, -9.93],
+  [-76.26, -10.69],
+])
+
+w('aduana-pisco', 'ica-hub', [
+  [-76.11, -13.71],
+])
+
+w('ica-hub', 'arequipa-hub', [
+  [-74.94, -14.83],
+  [-73.25, -15.92],
+  [-72.71, -16.62],
+])
+
+w('aduana-arequipa', 'arequipa-hub', [
+  [-71.52, -16.41],
+])
+
+w('arequipa-hub', 'juliaca-hub', [
+  [-71.08, -15.38],
+  [-70.73, -15.62],
+])
+
+w('arequipa-hub', 'moquegua-hub', [
+  [-71.18, -16.84],
+])
+
+w('aduana-ilo', 'moquegua-hub', [
+  [-70.97, -17.14],
+])
+
+w('aduana-tacna', 'moquegua-hub', [
+  [-70.27, -17.93],
+  [-70.35, -17.54],
+  [-70.97, -17.14],
+])
+
+w('aduana-puno', 'juliaca-hub', [
+  [-70.07, -15.70],
+])
+
+w('aduana-desaguadero', 'juliaca-hub', [
+  [-69.47, -16.13],
+  [-70.02, -15.84],
+])
+
+w('aduana-cusco', 'cusco-hub', [
+  [-71.97, -13.53],
+])
+
+w('cusco-hub', 'aduana-puerto-maldonado', [
+  [-71.62, -13.69],
+  [-70.74, -13.22],
+  [-70.04, -12.95],
+])
+
+w('aduana-tarapoto', 'moyobamba-hub', [
+  [-76.64, -6.22],
+])
+
 // CARRETERA CENTRAL — Callao → La Oroya → sierra / selva central
 // ─────────────────────────────────────────────────────────────────────────────
 // Ruta 22: Callao → Chosica → Matucana → Casapalca → La Oroya

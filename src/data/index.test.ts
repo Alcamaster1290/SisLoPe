@@ -8,22 +8,23 @@ function buildPairKey(from: string, to: string): string {
 }
 
 describe("logisticsRepository flow completion", () => {
-  it("keeps land flows limited to customs nodes", () => {
+  it("keeps land flows limited to customs and inland hub nodes", () => {
     const flows = logisticsRepository.getFlows();
     const nodesById = new Map(nodes.map((node) => [node.id, node]));
-    const nonCustomsLand = flows
+    const allowedCategories = new Set(["aduana", "inland_hub"]);
+    const disallowedLand = flows
       .filter((flow) => flow.mode === "land")
       .filter((flow) => {
         const source = nodesById.get(flow.from);
         const target = nodesById.get(flow.to);
-        return source?.category !== "aduana" || target?.category !== "aduana";
+        return !source || !target || !allowedCategories.has(source.category) || !allowedCategories.has(target.category);
       })
       .map((flow) => flow.id);
 
-    expect(nonCustomsLand).toEqual([]);
+    expect(disallowedLand).toEqual([]);
   });
 
-  it("does not auto-generate land flows from non-customs node connections", () => {
+  it("does not auto-generate land flows from node connections outside customs and inland hubs", () => {
     const flows = logisticsRepository.getFlows();
     const landPairs = new Set(
       flows
@@ -34,6 +35,8 @@ describe("logisticsRepository flow completion", () => {
     expect(landPairs.has(buildPairKey("callao", "lurin"))).toBe(false);
     expect(landPairs.has(buildPairKey("zofratacna", "santa-rosa"))).toBe(false);
     expect(landPairs.has(buildPairKey("aduana-tacna", "aduana-santa-rosa"))).toBe(true);
+    expect(landPairs.has(buildPairKey("aduana-pisco", "ica-hub"))).toBe(true);
+    expect(landPairs.has(buildPairKey("sullana-hub", "piura-hub"))).toBe(true);
   });
 
   it("does not auto-generate land on pairs already defined in another mode", () => {

@@ -3,6 +3,7 @@ import { nodes } from "@/data/nodes";
 import type { LogisticsFlow, LogisticsNode } from "@/types/logistics";
 
 const nodeMap = new Map<string, LogisticsNode>(nodes.map((node) => [node.id, node]));
+const landFlowCategories = new Set<LogisticsNode["category"]>(["aduana", "inland_hub"]);
 
 function buildPairKey(from: string, to: string): string {
   return [from, to].sort().join("|");
@@ -13,16 +14,15 @@ function inferLandImportance(source: LogisticsNode, target: LogisticsNode): Logi
     return "primary";
   }
 
-  if (source.category === "border" || target.category === "border") {
-    return "primary";
-  }
-
-  if ((source.category === "port_sea" || target.category === "port_sea") &&
-      (source.strategicLevel === "national" || target.strategicLevel === "national")) {
+  if (source.category === "aduana" || target.category === "aduana") {
     return "primary";
   }
 
   return "secondary";
+}
+
+function canUseAsLandFlowEndpoint(node: LogisticsNode): boolean {
+  return landFlowCategories.has(node.category);
 }
 
 function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFlow[]): LogisticsFlow[] {
@@ -34,7 +34,7 @@ function buildCompletedFlows(inputNodes: LogisticsNode[], baseFlows: LogisticsFl
     for (const targetId of sourceNode.connections ?? []) {
       const targetNode = nodeMap.get(targetId);
       if (!targetNode) continue;
-      if (sourceNode.category !== "aduana" || targetNode.category !== "aduana") continue;
+      if (!canUseAsLandFlowEndpoint(sourceNode) || !canUseAsLandFlowEndpoint(targetNode)) continue;
 
       const pairKey = buildPairKey(sourceNode.id, targetId);
       if (existingPairs.has(pairKey) || addedLandPairs.has(pairKey)) {
