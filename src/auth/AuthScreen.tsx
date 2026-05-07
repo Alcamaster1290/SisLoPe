@@ -6,7 +6,7 @@ const ADEX_REGISTER_URL =
   import.meta.env.VITE_ADEX_URL?.trim() || 'https://adex-palletizer.vercel.app'
 
 export function AuthScreen() {
-  const { recheck } = useAuth()
+  const { recheck, loginAsGuest } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -222,12 +222,48 @@ export function AuthScreen() {
               borderRadius: 10,
               cursor: submitting ? 'not-allowed' : 'pointer',
               transition: 'background 0.15s',
-              marginBottom: '1rem',
+              marginBottom: '0.75rem',
             }}
           >
             {submitting ? 'Entrando...' : 'Iniciar sesión'}
           </button>
         </form>
+
+        {/* Guest entry */}
+        <button
+          type="button"
+          onClick={loginAsGuest}
+          aria-label="Entrar como invitado, solo lectura"
+          style={{
+            width: '100%',
+            padding: '0.6rem 0.75rem',
+            fontFamily: 'var(--font-display)',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            letterSpacing: '0.04em',
+            color: 'var(--text-main)',
+            background: 'transparent',
+            border: '1px dashed var(--control-border-active)',
+            borderRadius: 10,
+            cursor: 'pointer',
+            transition: 'background 0.15s',
+            marginBottom: '0.4rem',
+          }}
+        >
+          Solo estoy viendo
+        </button>
+        <p
+          style={{
+            fontSize: '0.72rem',
+            color: 'var(--text-soft)',
+            textAlign: 'center',
+            margin: '0 0 1rem',
+            lineHeight: 1.45,
+          }}
+        >
+          Entra en modo invitado, sin sesion en Data Trade. Limitado a explorar
+          el mapa.
+        </p>
 
         {/* Register CTA */}
         <div

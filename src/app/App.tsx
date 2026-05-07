@@ -68,6 +68,7 @@ export function App() {
 function AppContent() {
   const rootRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
+  const { isGuest, logout } = useAuth();
   const themeDepth = useMapStore((state) => state.themeDepth);
   const viewMode = useMapStore((state) => state.viewMode);
   const showLabels = useMapStore((state) => state.showLabels);
@@ -371,6 +372,25 @@ function AppContent() {
 
   return (
     <div ref={rootRef} data-theme-depth={themeDepth} className="app-shell flex min-h-screen flex-col pb-5">
+      {isGuest ? (
+        <div
+          role="status"
+          className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-full border border-dashed border-[var(--control-border-active)] bg-[var(--panel-backdrop)] px-4 py-1.5 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--text-soft)]"
+        >
+          <span>
+            Modo invitado · Solo lectura · Sin sesion en Data Trade
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              void logout();
+            }}
+            className="rounded-full border border-[var(--control-border)] px-3 py-0.5 font-semibold tracking-[0.14em] text-[var(--text-main)] transition hover:bg-[var(--control-hover-bg)]"
+          >
+            Salir
+          </button>
+        </div>
+      ) : null}
       <TopBar
         visibleNodeCount={filteredNodes.length}
         visibleFlowCount={filteredFlows.length}

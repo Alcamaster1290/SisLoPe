@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "./AuthContext";
-import { useAuth } from "./authState";
+import { GUEST_SESSION_STORAGE_KEY, useAuth } from "./authState";
 
 const authPayload = {
   user: {
@@ -32,20 +32,38 @@ function jsonResponse(payload: unknown, status = 200) {
 }
 
 function Probe() {
-  const { status, user } = useAuth();
+  const { status, user, isGuest, loginAsGuest, logout } = useAuth();
 
   return (
     <div>
       <span data-testid="status">{status}</span>
       <span data-testid="email">{user?.email ?? "none"}</span>
+      <span data-testid="role">{user?.role ?? "none"}</span>
+      <span data-testid="is-guest">{String(isGuest)}</span>
+      <button data-testid="enter-guest" onClick={() => loginAsGuest()}>
+        guest
+      </button>
+      <button
+        data-testid="logout"
+        onClick={() => {
+          void logout();
+        }}
+      >
+        logout
+      </button>
     </div>
   );
 }
+
+beforeEach(() => {
+  window.localStorage.clear();
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   window.history.replaceState(null, "", "/");
+  window.localStorage.clear();
 });
 
 describe("AuthProvider handoff", () => {
@@ -85,5 +103,75 @@ describe("AuthProvider handoff", () => {
         }),
       }),
     );
+  });
+});
+
+describe("AuthProvider guest mode", () => {
+  it("loginAsGuest authenticates without hitting the network and persists in localStorage", async () => {
+    const fetchMock = vi.fn(() => jsonResponse({ error: { code: "NOT_MOCKED" } }, 404));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("status")).toHaveTextContent("unauthenticated");
+    });
+
+    fetchMock.mockClear();
+    fireEvent.click(screen.getByTestId("enter-guest"));
+
+    expect(screen.getByTestId("status")).toHaveTextContent("authenticated");
+    expect(screen.getByTestId("role")).toHaveTextContent("guest");
+    expect(screen.getByTestId("is-guest")).toHaveTextContent("true");
+    expect(window.localStorage.getItem(GUEST_SESSION_STORAGE_KEY)).toBe("1");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("guest session survives a remount via localStorage and skips the network call", async () => {
+    window.localStorage.setItem(GUEST_SESSION_STORAGE_KEY, "1");
+    const fetchMock = vi.fn(() => jsonResponse({ error: { code: "NOT_MOCKED" } }, 404));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("status")).toHaveTextContent("authenticated");
+    });
+    expect(screen.getByTestId("role")).toHaveTextContent("guest");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("logout from guest clears the localStorage flag and returns to unauthenticated", async () => {
+    const fetchMock = vi.fn(() => jsonResponse({ error: { code: "NOT_MOCKED" } }, 404));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("status")).toHaveTextContent("unauthenticated");
+    });
+
+    fireEvent.click(screen.getByTestId("enter-guest"));
+    expect(screen.getByTestId("status")).toHaveTextContent("authenticated");
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("logout"));
+    });
+
+    expect(screen.getByTestId("status")).toHaveTextContent("unauthenticated");
+    expect(screen.getByTestId("is-guest")).toHaveTextContent("false");
+    expect(window.localStorage.getItem(GUEST_SESSION_STORAGE_KEY)).toBeNull();
   });
 });

@@ -13,11 +13,37 @@ import {
   type AuthSessionPayload,
   type AuthUser,
 } from './authApi'
-import { AuthContext, type AuthStatus } from './authState'
+import {
+  AuthContext,
+  GUEST_SESSION_STORAGE_KEY,
+  GUEST_USER,
+  isGuestUser,
+  type AuthStatus,
+} from './authState'
 
 let pendingHandoffCode: string | null = null
 let pendingHandoffExchange: Promise<AuthSessionPayload> | null = null
 const trackedSessionIds = new Set<string>()
+
+function readGuestSession(): boolean {
+  try {
+    return window.localStorage.getItem(GUEST_SESSION_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeGuestSession(active: boolean): void {
+  try {
+    if (active) {
+      window.localStorage.setItem(GUEST_SESSION_STORAGE_KEY, '1')
+    } else {
+      window.localStorage.removeItem(GUEST_SESSION_STORAGE_KEY)
+    }
+  } catch {
+    // ignore — guest persistence is best-effort
+  }
+}
 
 function clearHandoffFromUrl() {
   const url = new URL(window.location.href)
@@ -39,8 +65,14 @@ function exchangeHandoffOnce(code: string) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>('checking')
-  const [user, setUser] = useState<AuthUser | null>(null)
+  // Read the guest flag once during initial render so the auth state starts in
+  // the right shape and we never have to setState() synchronously inside the
+  // mount effect (the react-hooks/set-state-in-effect rule rejects that).
+  const initialGuest = readGuestSession()
+  const [status, setStatus] = useState<AuthStatus>(
+    initialGuest ? 'authenticated' : 'checking',
+  )
+  const [user, setUser] = useState<AuthUser | null>(initialGuest ? GUEST_USER : null)
   const [recheckKey, setRecheckKey] = useState(0)
 
   const recheck = useCallback(() => {
@@ -50,6 +82,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true
+
+    // If we hydrated as a guest the API check is skipped entirely.
+    if (readGuestSession()) {
+      return () => {
+        mounted = false
+      }
+    }
 
     async function resolveSession() {
       const url = new URL(window.location.href)
@@ -85,18 +124,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [recheckKey])
 
+  const loginAsGuest = useCallback(() => {
+    writeGuestSession(true)
+    setUser(GUEST_USER)
+    setStatus('authenticated')
+  }, [])
+
   const logout = useCallback(async () => {
+    if (isGuestUser(user)) {
+      writeGuestSession(false)
+      setUser(null)
+      setStatus('unauthenticated')
+      return
+    }
+
     try {
       await logoutSession()
     } catch {
       // Ignore — we clear client state regardless.
     }
+    writeGuestSession(false)
     setUser(null)
     setStatus('unauthenticated')
-  }, [])
+  }, [user])
+
+  const isGuest = isGuestUser(user)
 
   return (
-    <AuthContext.Provider value={{ status, user, logout, recheck }}>
+    <AuthContext.Provider
+      value={{ status, user, isGuest, logout, recheck, loginAsGuest }}
+    >
       {children}
     </AuthContext.Provider>
   )
