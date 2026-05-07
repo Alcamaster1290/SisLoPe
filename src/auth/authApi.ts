@@ -283,6 +283,13 @@ export function fetchCurrentSession() {
 }
 
 export function loginWithPassword(identifier: string, password: string) {
+  if (DATA_TRADE_API_URL) {
+    return requestDataTradeJson<DataTradeAuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ identifier, password }),
+    }).then(applyDataTradeAuthResponse)
+  }
+
   return requestJson<AuthSessionPayload>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ identifier, password }),

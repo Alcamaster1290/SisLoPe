@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { LogisticsFlow, LogisticsNode } from "@/types/logistics";
-import { flowsToFeatureCollection, getDepartmentViewPreset, nodesToFeatureCollection } from "@/utils/geo";
+import {
+  FLOW_ANIMATION_CYCLE_MS,
+  flowsToFeatureCollection,
+  getDepartmentViewPreset,
+  nodesToFeatureCollection,
+} from "@/utils/geo";
 
 const sampleNodes: LogisticsNode[] = [
   {
@@ -73,6 +78,8 @@ describe("geo utilities", () => {
     expect(feature.properties.kind).toBe("flow");
     expect(feature.geometry.coordinates.length).toBeGreaterThan(2);
     expect(feature.properties.timestamps).toHaveLength(feature.geometry.coordinates.length);
+    expect(feature.properties.timestamps[0]).toBe(0);
+    expect(feature.properties.timestamps.at(-1)).toBe(FLOW_ANIMATION_CYCLE_MS);
   });
 
   it("configures department view with stable pitch and bounded zoom", () => {

@@ -37,6 +37,7 @@ import type {
 } from "@/types/logistics";
 import {
   flowsToFeatureCollection,
+  FLOW_ANIMATION_CYCLE_MS,
   getModeCameraPreset,
   getNodeFocusCamera,
   getSuggestedPadding,
@@ -768,7 +769,7 @@ export function LogisticsMap({
 
     const loop = (time: number) => {
       if (time - previous > 36) {
-        setAnimationTime(time % 520);
+        setAnimationTime(time % FLOW_ANIMATION_CYCLE_MS);
         previous = time;
       }
       frame = window.requestAnimationFrame(loop);

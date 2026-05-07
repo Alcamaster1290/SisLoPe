@@ -33,6 +33,8 @@ export const INITIAL_CAMERA_STATE: MapCameraState = {
   bearing: 0,
 };
 
+export const FLOW_ANIMATION_CYCLE_MS = 520;
+
 export const DEFAULT_CAMERA_PADDING: CameraPadding = {
   top: 92,
   right: 104,
@@ -223,10 +225,11 @@ function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mod
   return [start, end];
 }
 
-function createTimestamps(coordinates: Position[], distanceKm: number): number[] {
-  const duration = Math.max(160, Math.min(520, distanceKm * 5.2));
+function createTimestamps(coordinates: Position[]): number[] {
   const lastIndex = Math.max(1, coordinates.length - 1);
-  return coordinates.map((_, index) => Number(((duration / lastIndex) * index).toFixed(2)));
+  return coordinates.map((_, index) =>
+    Number(((FLOW_ANIMATION_CYCLE_MS / lastIndex) * index).toFixed(2)),
+  );
 }
 
 export function flowsToFeatureCollection(
@@ -256,7 +259,7 @@ export function flowsToFeatureCollection(
         distanceKm,
         sourceNode,
         targetNode,
-        timestamps: createTimestamps(coordinates, distanceKm),
+        timestamps: createTimestamps(coordinates),
       },
     });
   }

@@ -3,6 +3,7 @@ import { TripsLayer } from "@deck.gl/geo-layers";
 import { getDepartmentForNode } from "@/data/departments";
 import type { DepartmentId, FlowFeature, MapViewMode } from "@/types/logistics";
 import { getFlowColor, getFlowStrokeWidth } from "@/utils/colorScale";
+import { FLOW_ANIMATION_CYCLE_MS } from "@/utils/geo";
 
 interface FlowLayerOptions {
   flowFeatures: FlowFeature[];
@@ -400,7 +401,9 @@ export function createFlowLayers({
           modeZoomCalibration.trailBoost *
           (mapZoom < 5.7 ? 0.9 : 1),
       ),
-      currentTime: animationTime * profile.pulse * viewProfile.pulseBoost * modeZoomCalibration.pulseBoost,
+      currentTime:
+        (animationTime * profile.pulse * viewProfile.pulseBoost * modeZoomCalibration.pulseBoost) %
+        FLOW_ANIMATION_CYCLE_MS,
       fadeTrail: true,
       getPath: (feature) => feature.geometry.coordinates as [number, number][],
       getTimestamps: (feature) => feature.properties.timestamps,
