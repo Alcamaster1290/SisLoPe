@@ -40,11 +40,19 @@ VITE_MARITIME_API_BASE_URL=
 
 Si `VITE_MAP_STYLE_URL` queda vacia, SisLoPe usa el fallback oscuro interno sin token.
 
-## Auth Actual Y Proxima Migracion
+## Auth Local Y Handoff
 
 El login visual de SisLoPe ya existe y debe mantenerse como unica puerta de entrada del modulo.
 
-Estado actual:
+Cuando `VITE_DATA_TRADE_API_URL` esta configurado, el login usa el backend comun de Data Trade:
+
+```text
+AuthScreen SisLoPe
+  -> VITE_DATA_TRADE_API_URL/auth/login
+  -> apps/api schema data_trade
+```
+
+Si `VITE_DATA_TRADE_API_URL` no existe, SisLoPe conserva el fallback legacy:
 
 ```text
 AuthScreen SisLoPe
@@ -66,15 +74,7 @@ ADEX boton SisLoPe
 
 El `handoff` es temporal, de un solo uso, y no contiene email, password, access token ni refresh token. Si el canje falla, SisLoPe muestra su login normal.
 
-Proxima convergencia esperada:
-
-```text
-AuthScreen SisLoPe
-  -> VITE_DATA_TRADE_API_URL/auth/login
-  -> apps/api schema data_trade
-```
-
-Variables esperadas para la migracion futura:
+Variables esperadas para desarrollo local con Data Trade:
 
 ```text
 VITE_DATA_TRADE_API_URL=http://localhost:8788

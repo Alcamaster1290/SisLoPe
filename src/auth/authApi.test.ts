@@ -36,9 +36,79 @@ async function importAuthApi() {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("SisLoPe Data Trade handoff auth", () => {
+  it("loginWithPassword usa Data Trade Auth cuando VITE_DATA_TRADE_API_URL existe", async () => {
+    const authApi = await importAuthApi();
+    const fetchMock = vi.fn((input: string, init?: RequestInit) => {
+      if (input.endsWith("/auth/login")) {
+        expect(init?.body).toBe(JSON.stringify({
+          identifier: "admin@datatrade.local",
+          password: "fake-test-password",
+        }));
+        return jsonResponse(authPayload);
+      }
+
+      return jsonResponse({ error: { code: "NOT_MOCKED" } }, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const session = await authApi.loginWithPassword("admin@datatrade.local", "fake-test-password");
+
+    expect(session.user.email).toBe("admin@datatrade.local");
+    expect(session.user.role).toBe("admin");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8788/auth/login",
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
+  });
+
+  it("loginWithPassword conserva fallback legacy si no hay Data Trade API", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_DATA_TRADE_API_URL", "");
+    const authApi = await import("./authApi");
+    const legacyPayload = {
+      user: {
+        id: "legacy-user",
+        email: "legacy@sislope.local",
+        username: "legacy",
+        role: "user",
+        status: "active",
+        mustChangePassword: false,
+      },
+      session: {
+        id: "legacy-session",
+        expiresAt: "2099-01-01T00:00:00.000Z",
+      },
+    };
+    const fetchMock = vi.fn((input: string, init?: RequestInit) => {
+      if (input === "/api/auth/login") {
+        expect(init?.body).toBe(JSON.stringify({
+          identifier: "legacy@sislope.local",
+          password: "legacy-pass",
+        }));
+        return jsonResponse(legacyPayload);
+      }
+
+      return jsonResponse({ error: { code: "NOT_MOCKED" } }, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const session = await authApi.loginWithPassword("legacy@sislope.local", "legacy-pass");
+
+    expect(session.user.email).toBe("legacy@sislope.local");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth/login",
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
+  });
+
   it("canjea handoff sin enviar credenciales ni tokens por URL", async () => {
     const authApi = await importAuthApi();
     const fetchMock = vi.fn((input: string, init?: RequestInit) => {
