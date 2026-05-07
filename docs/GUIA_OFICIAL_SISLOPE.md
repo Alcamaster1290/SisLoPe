@@ -26,17 +26,19 @@ La seleccion departamental opera desde panel y desde mapa. El estado `selectedDe
 
 ## Inventario oficial de lugares y nodos del sistema
 
-La red actual contiene sesenta nodos. La clase de puerto maritimo agrupa Puerto del Callao, Puerto de Chancay, Puerto de Paita, Puerto de Talara, Puerto de Bayovar, Puerto de Eten, Puerto de Salaverry, Puerto de Pacasmayo, Puerto de Chimbote, Puerto de Huarmey, Puerto General San Martin, Puerto San Juan de Marcona, Terminal Melchorita, Puerto de Matarani, Puerto de Mollendo y Puerto de Ilo.
+La red actual contiene ochenta y siete nodos. La clase de puerto maritimo agrupa Puerto del Callao, Puerto de Chancay, Puerto de Paita, Puerto de Talara, Puerto de Bayovar, Puerto de Eten, Puerto de Salaverry, Puerto de Pacasmayo, Puerto de Chimbote, Puerto de Huarmey, Puerto General San Martin, Puerto San Juan de Marcona, Terminal Melchorita, Puerto de Matarani, Puerto de Mollendo y Puerto de Ilo.
 
 La clase de puerto fluvial agrupa Puerto de Iquitos, Puerto de Nauta, Puerto de Yurimaguas, Puerto de Pucallpa, Puerto Maldonado y Puerto de Puno.
 
 La clase aeroportuaria agrupa Aeropuerto Jorge Chavez, Aeropuerto de Piura, Aeropuerto de Chiclayo, Aeropuerto de Trujillo, Aeropuerto de Pisco, Aeropuerto de Arequipa, Aeropuerto de Juliaca, Aeropuerto del Cusco, Aeropuerto de Tacna, Aeropuerto de Iquitos, Aeropuerto de Pucallpa, Aeropuerto de Tarapoto y Aeropuerto de Puerto Maldonado.
 
-La clase fronteriza y CEBAF agrupa Complejo Fronterizo Santa Rosa, Desaguadero, CEBAF Tumbes / Aguas Verdes, La Tina, Inapari y Kasani.
+La clase fronteriza y CEBAF agrupa Complejo Fronterizo Santa Rosa, Desaguadero, CEBAF Tumbes / Aguas Verdes, La Tina, Alamor, La Balsa, Inapari y Kasani.
 
 La clase de zona franca y zona economica especial agrupa ZOFRATACNA, ZED Paita, ZED Ilo y ZED Matarani.
 
 La clase de hub interior agrupa Piura, Sullana, Chiclayo, Trujillo, Cajamarca / Trepaderas, Lurin, Villa El Salvador, La Oroya, Huancayo, Ica, Arequipa, Moquegua, Juliaca, Cusco y Moyobamba.
+
+La clase aduanera agrupa Aduana Maritima del Callao, Aduana Aerea y Postal del Callao, Sede Chucuito, agencias postales de Lince y Los Olivos, Aduana de Tumbes, Paita, Chiclayo, Salaverry, Chimbote, Chancay, Pisco, Mollendo, Arequipa, Ilo, Tacna, Santa Rosa, Iquitos, Pucallpa, Tarapoto, Puerto Maldonado, Cusco, Puno, Desaguadero y La Tina.
 
 La clase `corridor_anchor` permanece disponible en el modelo para escenarios de ampliacion, aunque el dataset inicial no registra nodos activos en esa clase.
 

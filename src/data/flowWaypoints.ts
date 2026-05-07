@@ -97,6 +97,15 @@ w('la-tina', 'piura-hub', [
   [-80.47, -4.90],   // Empalme con ruta a Sullana
 ])
 
+w('alamor', 'sullana-hub', [
+  [-80.30, -4.61],   // Lancones / Poechos corridor
+])
+
+w('alamor', 'piura-hub', [
+  [-80.30, -4.61],   // Lancones / Poechos corridor
+  [-80.69, -4.90],   // Sullana
+])
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CORREDOR NORTE ANDINO — Piura / Paita → Cajamarca → costa norte
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,6 +124,17 @@ w('cajamarca-trepaderas', 'salaverry', [
 
 // Cajamarca → La Tina (ruta frontera Ecuador vía Jaén / San Ignacio)
 w('cajamarca-trepaderas', 'la-tina', [
+  [-78.99, -5.57],   // San Ignacio
+  [-79.48, -4.87],   // Foothills de Ayabaca
+])
+
+w('cajamarca-trepaderas', 'la-balsa', [
+  [-78.99, -5.57],   // San Ignacio
+  [-79.08, -5.00],   // Namballe
+])
+
+w('la-balsa', 'la-tina', [
+  [-79.08, -5.00],   // Namballe
   [-78.99, -5.57],   // San Ignacio
   [-79.48, -4.87],   // Foothills de Ayabaca
 ])
