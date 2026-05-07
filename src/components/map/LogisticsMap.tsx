@@ -20,6 +20,8 @@ import {
 import { createFlowLayers } from "@/layers/createFlowLayers";
 import { createMaritimeFleetHeatmapLayer } from "@/layers/createMaritimeFleetHeatmapLayer";
 import { createNodeLayers } from "@/layers/createNodeLayers";
+import { createSunatLayers } from "@/layers/createSunatLayers";
+import { sunatOffices } from "@/data/sunatOffices";
 import { getMapStyle } from "@/lib/mapStyle";
 import type { MaritimeFleetHeatmapReadService } from "@/lib/maritimeHeatmap/service";
 import { useMapStore } from "@/store/useMapStore";
@@ -656,6 +658,10 @@ export function LogisticsMap({
         labelData,
         onHover: () => undefined,
         onClick: () => undefined,
+      }),
+      ...createSunatLayers({
+        offices: sunatOffices,
+        mapZoom,
       }),
     ];
   }, [
