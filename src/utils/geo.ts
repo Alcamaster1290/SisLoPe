@@ -7,6 +7,7 @@ import {
   point,
 } from "@turf/turf";
 import type { Feature, LineString, Position } from "geojson";
+import { FLOW_WAYPOINTS, makeWaypointKey } from "@/data/flowWaypoints";
 import type {
   CameraPadding,
   CoordinateOverride,
@@ -214,7 +215,13 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
   });
 }
 
-function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mode: LogisticsFlow["mode"]): Position[] {
+function createFlowCoordinates(
+  source: LogisticsNode,
+  target: LogisticsNode,
+  mode: LogisticsFlow["mode"],
+  fromId?: string,
+  toId?: string,
+): Position[] {
   const sourceCoord = resolveNodeCoordinates(source);
   const targetCoord = resolveNodeCoordinates(target);
   const start: Position = [sourceCoord.lon, sourceCoord.lat];
@@ -222,6 +229,21 @@ function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mod
 
   if (mode === "sea") {
     return createSeaLaneCoordinates(start, end);
+  }
+
+  // Look up road waypoints for this corridor when node IDs are available.
+  // Waypoints anchor the spline to Peru's actual highway geometry instead of
+  // using the generic perpendicular control-point offset.
+  const via = fromId && toId ? FLOW_WAYPOINTS.get(makeWaypointKey(fromId, toId)) : undefined;
+
+  if (via && via.length > 0) {
+    const allPoints: Position[] = [start, ...via.map((p) => [p[0], p[1]] as Position), end];
+    const roadLine = lineString(allPoints);
+    const curved = bezierSpline(roadLine, { resolution: 800, sharpness: 0.55 });
+    if (curved.geometry.type === "LineString") {
+      return curved.geometry.coordinates;
+    }
+    return allPoints;
   }
 
   const control = getControlPoint(start, end, getCurvatureForMode(mode));
@@ -254,7 +276,7 @@ export function flowsToFeatureCollection(
 
     if (!sourceNode || !targetNode) continue;
 
-    const coordinates = createFlowCoordinates(sourceNode, targetNode, flow.mode);
+    const coordinates = createFlowCoordinates(sourceNode, targetNode, flow.mode, flow.from, flow.to);
     const distanceKm = Number(distance(point(coordinates[0]), point(coordinates.at(-1)!), { units: "kilometers" }).toFixed(1));
 
     features.push({
