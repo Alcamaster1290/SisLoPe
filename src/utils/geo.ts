@@ -214,7 +214,7 @@ function createFlowCoordinates(source: LogisticsNode, target: LogisticsNode, mod
 
   const control = getControlPoint(start, end, getCurvatureForMode(mode));
   const baseLine = lineString([start, control, end]);
-  const curved = bezierSpline(baseLine, { resolution: 6000, sharpness: 0.8 });
+  const curved = bezierSpline(baseLine, { resolution: 800, sharpness: 0.8 });
 
   if (curved.geometry.type === "LineString") {
     return curved.geometry.coordinates;

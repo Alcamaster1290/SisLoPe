@@ -41,9 +41,17 @@ export function DeckCanvasOverlay({
       onHealthChange(false);
     }
 
+    const container = containerRef.current;
+
     return () => {
       onReady(null);
       deckRef.current?.finalize();
+      // Deck.gl injects its own <canvas> as a child of `parent` and does not
+      // remove it on finalize(). Without this cleanup, StrictMode's double-mount
+      // (or any remount) leaves a zombie canvas with id="deckgl-overlay" sized
+      // to the WebGL default 33554432x33554432, which both stalls the GPU and
+      // covers the live overlay so deck layers never paint.
+      container?.querySelectorAll("canvas").forEach((canvas) => canvas.remove());
       deckRef.current = null;
     };
   }, [onHealthChange, onReady]);
