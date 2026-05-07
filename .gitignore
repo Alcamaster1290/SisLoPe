@@ -12,3 +12,6 @@ edge-shot.png
 .vercel
 # next-agents-md
 .next-docs/
+
+# claude-code worktrees and local config
+.claude/
