@@ -256,6 +256,26 @@ export default function SidePanel({
               </p>
             </a>
 
+            <a
+              href={ADEX_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4 transition hover:border-[var(--surface-border-strong)]"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2e5f8f]/15 text-xs font-bold text-[#2e5f8f]">
+                  PL
+                </span>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-strong)]">
+                  Definir mi Propuesta Logistica
+                </div>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-main)]">
+                Abre ADEX Palletizer para estimar embalaje, cubicaje y paletizacion antes
+                de cerrar tu propuesta.
+              </p>
+            </a>
+
             <div className="rounded-[22px] border border-[var(--surface-border)] bg-[var(--panel-backdrop)] p-4">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#921e1e]/15 text-xs font-bold text-[#921e1e]">
