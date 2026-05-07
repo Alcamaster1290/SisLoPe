@@ -24,7 +24,7 @@ export function NodeTooltip({ node, tooltip, onClose }: NodeTooltipProps) {
           }}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="font-['Rajdhani'] text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
+            <div className="font-[var(--font-display)] text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-strong)]">
               {node.name}
             </div>
             <button

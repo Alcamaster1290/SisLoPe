@@ -204,10 +204,10 @@ export default function SidePanel({
         /* -------------------------------------------------------- */
         <div className="flex h-full flex-col gap-5 px-5 py-5">
           <div>
-            <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
+            <div className="font-[var(--font-display)] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
               Centro operativo
             </div>
-            <h2 className="mt-2 font-['Rajdhani'] text-2xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
+            <h2 className="mt-2 font-[var(--font-display)] text-2xl font-semibold uppercase tracking-[0.1em] text-[var(--text-strong)]">
               Que necesitas hacer?
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-main)]">
@@ -299,10 +299,10 @@ export default function SidePanel({
         <div className="thin-scrollbar flex-1 overflow-y-auto px-5 py-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="font-['Rajdhani'] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
+              <div className="font-[var(--font-display)] text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-soft)]">
                 Nodo seleccionado
               </div>
-              <h2 className="mt-2 font-['Rajdhani'] text-[1.75rem] font-semibold uppercase leading-tight tracking-[0.08em] text-[var(--text-strong)]">
+              <h2 className="mt-2 font-[var(--font-display)] text-[1.75rem] font-semibold uppercase leading-tight tracking-[0.08em] text-[var(--text-strong)]">
                 {node.name}
               </h2>
             </div>

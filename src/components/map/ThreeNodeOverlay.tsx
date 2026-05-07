@@ -479,7 +479,7 @@ export function ThreeNodeOverlay({
                   backgroundColor: labelBackground,
                 }}
               >
-                <div className="font-['Rajdhani'] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-strong)]">
+                <div className="font-[var(--font-display)] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-strong)]">
                   {item.node.name}
                 </div>
                 <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--text-soft)]">
