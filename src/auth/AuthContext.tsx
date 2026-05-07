@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
   useCallback,
@@ -8,38 +6,73 @@ import {
 } from 'react'
 
 import {
+  exchangeHandoffCode,
   fetchCurrentSession,
   logoutSession,
+  trackDataTradeEvent,
+  type AuthSessionPayload,
   type AuthUser,
 } from './authApi'
+import { AuthContext, type AuthStatus } from './authState'
 
-type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated'
+let pendingHandoffCode: string | null = null
+let pendingHandoffExchange: Promise<AuthSessionPayload> | null = null
+const trackedSessionIds = new Set<string>()
 
-interface AuthContextValue {
-  status: AuthStatus
-  user: AuthUser | null
-  logout: () => Promise<void>
-  recheck: () => void
+function clearHandoffFromUrl() {
+  const url = new URL(window.location.href)
+  if (!url.searchParams.has('handoff')) {
+    return
+  }
+
+  url.searchParams.delete('handoff')
+  window.history.replaceState(null, document.title, `${url.pathname}${url.search}${url.hash}`)
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+function exchangeHandoffOnce(code: string) {
+  if (pendingHandoffCode !== code || !pendingHandoffExchange) {
+    pendingHandoffCode = code
+    pendingHandoffExchange = exchangeHandoffCode(code, 'sislope')
+  }
+
+  return pendingHandoffExchange
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('checking')
   const [user, setUser] = useState<AuthUser | null>(null)
   const [recheckKey, setRecheckKey] = useState(0)
 
-  const recheck = useCallback(() => setRecheckKey((k) => k + 1), [])
+  const recheck = useCallback(() => {
+    setStatus('checking')
+    setRecheckKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let mounted = true
-    setStatus('checking')
 
-    fetchCurrentSession()
+    async function resolveSession() {
+      const url = new URL(window.location.href)
+      const handoffCode = url.searchParams.get('handoff')?.trim()
+
+      if (handoffCode) {
+        const payload = await exchangeHandoffOnce(handoffCode)
+        clearHandoffFromUrl()
+        return payload
+      }
+
+      return fetchCurrentSession()
+    }
+
+    resolveSession()
       .then((payload) => {
         if (!mounted) return
         setUser(payload.user)
         setStatus('authenticated')
+        if (!trackedSessionIds.has(payload.session.id)) {
+          trackedSessionIds.add(payload.session.id)
+          void trackDataTradeEvent('module_opened')
+        }
       })
       .catch(() => {
         if (!mounted) return
@@ -67,10 +100,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider')
-  return ctx
 }
