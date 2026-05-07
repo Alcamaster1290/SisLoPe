@@ -91,6 +91,14 @@ function getOperationalProfile(node: LogisticsNode): OperationalProfile {
         risks: "Variable segun corredor asociado.",
         suggestedModes: ["Terrestre"],
       };
+    case "aduana":
+      return {
+        operationTypes: ["Despacho aduanero", "Control documentario", "Aforo fisico y revision"],
+        customsRole: "Intendencia o agencia de la SUNAT con facultad de control aduanero pleno.",
+        connectivity: "Vinculada al nodo logistico o paso fronterizo de su jurisdiccion.",
+        risks: "Tiempos de despacho, cuotas de aforo, normativa cambiante.",
+        suggestedModes: ["Terrestre", "Maritimo", "Aereo", "Fluvial"],
+      };
   }
 }
 
@@ -110,6 +118,8 @@ function getOperationalRole(node: LogisticsNode): string {
       return "Centro de consolidacion interior con funcion de distribucion, almacenamiento y transferencia modal.";
     case "corridor_anchor":
       return "Punto de anclaje para corredores estrategicos y visualizacion de cadenas logisticas.";
+    case "aduana":
+      return "Intendencia o agencia aduanera de la SUNAT con facultad de control y despacho en su jurisdiccion.";
   }
 }
 

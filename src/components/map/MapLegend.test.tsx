@@ -25,6 +25,7 @@ const baseTotals = {
   freezone: 0,
   inland_hub: 0,
   corridor_anchor: 0,
+  aduana: 0,
 } satisfies Record<NodeCategory, number>;
 
 describe("MapLegend", () => {

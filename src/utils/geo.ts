@@ -215,6 +215,27 @@ function createSeaLaneCoordinates(start: Position, end: Position): Position[] {
   });
 }
 
+/**
+ * Add linearly interpolated intermediate points along each segment so the
+ * TripsLayer animation runs smoothly even when waypoints are spaced far apart.
+ * We target ~18 km between sampled points — enough resolution to look smooth
+ * without blowing up the coordinate array.
+ */
+function densifyPolyline(pts: Position[], targetKm = 18): Position[] {
+  const result: Position[] = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const from = pts[i - 1];
+    const to = pts[i];
+    const segKm = distance(point(from), point(to), { units: "kilometers" });
+    const steps = Math.max(2, Math.ceil(segKm / targetKm));
+    for (let j = 1; j <= steps; j++) {
+      const t = j / steps;
+      result.push([from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]);
+    }
+  }
+  return result;
+}
+
 function createFlowCoordinates(
   source: LogisticsNode,
   target: LogisticsNode,
@@ -232,18 +253,14 @@ function createFlowCoordinates(
   }
 
   // Look up road waypoints for this corridor when node IDs are available.
-  // Waypoints anchor the spline to Peru's actual highway geometry instead of
-  // using the generic perpendicular control-point offset.
+  // Roads are piecewise-linear, not splines — bezierSpline overshoots between
+  // geographic waypoints. We densify the straight polyline so animation stays
+  // smooth, but the direction at every point follows the actual highway.
   const via = fromId && toId ? FLOW_WAYPOINTS.get(makeWaypointKey(fromId, toId)) : undefined;
 
   if (via && via.length > 0) {
     const allPoints: Position[] = [start, ...via.map((p) => [p[0], p[1]] as Position), end];
-    const roadLine = lineString(allPoints);
-    const curved = bezierSpline(roadLine, { resolution: 800, sharpness: 0.55 });
-    if (curved.geometry.type === "LineString") {
-      return curved.geometry.coordinates;
-    }
-    return allPoints;
+    return densifyPolyline(allPoints);
   }
 
   const control = getControlPoint(start, end, getCurvatureForMode(mode));

@@ -36,6 +36,7 @@ export function MapLegend({
           freezone: 0,
           inland_hub: 0,
           corridor_anchor: 0,
+          aduana: 0,
         },
       ),
     [visibleNodes],

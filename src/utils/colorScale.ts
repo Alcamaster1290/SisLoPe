@@ -20,6 +20,7 @@ const CATEGORY_COLOR_HEX: Record<NodeCategory, string> = {
   freezone: "#5b9d73",
   inland_hub: "#d28c50",
   corridor_anchor: "#d6b95a",
+  aduana: "#e6b800",
 };
 
 const categoryScale = scaleOrdinal<NodeCategory, string>()
@@ -87,6 +88,12 @@ export const CATEGORY_META: Record<
     shortLabel: "Cor",
     color: categoryScale("corridor_anchor"),
     icon: "CA",
+  },
+  aduana: {
+    label: "Aduana SUNAT",
+    shortLabel: "AD",
+    color: categoryScale("aduana"),
+    icon: "AD",
   },
 };
 

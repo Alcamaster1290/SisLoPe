@@ -7,7 +7,8 @@ export type NodeCategory =
   | "border"
   | "freezone"
   | "inland_hub"
-  | "corridor_anchor";
+  | "corridor_anchor"
+  | "aduana";
 
 export type StrategicLevel = "national" | "regional" | "complementary";
 export type Macrozone = "north" | "center" | "south" | "amazon" | "border";
