@@ -452,7 +452,7 @@ function AppContent() {
                   categoryTotals={categoryTotals}
                   activeCategories={activeCategories}
                   onToggleCategory={handleLegendToggleCategory}
-                  onClearCategories={clearCategoryFilters}
+                  onSelectAllCategories={clearCategoryFilters}
                 />
               </div>
             </div>

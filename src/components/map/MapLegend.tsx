@@ -8,7 +8,7 @@ interface MapLegendProps {
   categoryTotals: Record<NodeCategory, number>;
   activeCategories: NodeCategory[];
   onToggleCategory: (category: NodeCategory) => void;
-  onClearCategories: () => void;
+  onSelectAllCategories: () => void;
 }
 
 export function MapLegend({
@@ -17,7 +17,7 @@ export function MapLegend({
   categoryTotals,
   activeCategories,
   onToggleCategory,
-  onClearCategories,
+  onSelectAllCategories,
 }: MapLegendProps) {
   const [minimized, setMinimized] = useState(false);
   const hasCategoryFilter = activeCategories.length > 0;
@@ -65,14 +65,6 @@ export function MapLegend({
           >
             {minimized ? "+" : "_"}
           </button>
-          <button
-            type="button"
-            onClick={onClearCategories}
-            disabled={activeCategories.length === 0}
-            className="control-pill rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-55"
-          >
-            Limpiar
-          </button>
         </div>
       </div>
 
@@ -82,7 +74,15 @@ export function MapLegend({
         </div>
       ) : (
         <>
-          <div className="mt-2.5 space-y-1.5">
+          <button
+            type="button"
+            onClick={onSelectAllCategories}
+            disabled={!hasCategoryFilter}
+            className="control-pill mt-2.5 w-full rounded-xl px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-strong)] disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            Seleccionar todo
+          </button>
+          <div className="mt-1.5 space-y-1.5">
             {categoriesToRender.map((category) => {
               const meta = CATEGORY_META[category];
               const active = !hasCategoryFilter || activeCategories.includes(category);
