@@ -42,8 +42,9 @@ import {
   getNodeFocusCamera,
   getSuggestedPadding,
   INITIAL_CAMERA_STATE,
+  MAP_INTERACTION_BOUNDS,
+  MAP_MIN_ZOOM,
   nodesToFeatureCollection,
-  PERU_BOUNDS,
 } from "@/utils/geo";
 import { getCategoryColorHex } from "@/utils/colorScale";
 
@@ -794,7 +795,8 @@ export function LogisticsMap({
       zoom: INITIAL_CAMERA_STATE.zoom,
       pitch: INITIAL_CAMERA_STATE.pitch,
       bearing: INITIAL_CAMERA_STATE.bearing,
-      maxBounds: PERU_BOUNDS as maplibregl.LngLatBoundsLike,
+      maxBounds: MAP_INTERACTION_BOUNDS as unknown as maplibregl.LngLatBoundsLike,
+      minZoom: MAP_MIN_ZOOM,
       attributionControl: false,
       renderWorldCopies: false,
     });

@@ -25,6 +25,16 @@ export const PERU_BOUNDS = [
   [-67.2, 1.8],
 ] as const;
 
+// Camera-panning bounds for the map. Wider than PERU_BOUNDS so users can
+// zoom out enough to fit the whole country with breathing room on screen.
+// PERU_BOUNDS stays as-is because sea-lane curves still anchor against it.
+export const MAP_INTERACTION_BOUNDS = [
+  [-92.0, -27.0],
+  [-60.0, 8.0],
+] as const;
+
+export const MAP_MIN_ZOOM = 3;
+
 export const INITIAL_CAMERA_STATE: MapCameraState = {
   longitude: -75.35,
   latitude: -9.45,
