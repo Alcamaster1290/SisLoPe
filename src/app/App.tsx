@@ -20,6 +20,8 @@ import { CATEGORY_META } from "@/utils/colorScale";
 import { AuthProvider } from "@/auth/AuthContext";
 import { useAuth } from "@/auth/authState";
 import { AuthScreen } from "@/auth/AuthScreen";
+import { DataTradeAuthPanel } from "@/dataTrade/DataTradeAuthPanel";
+import { trackDataTradeEvent } from "@/dataTrade/runtime";
 
 const LazySidePanel = lazy(() => import("@/components/map/SidePanel"));
 
@@ -128,6 +130,17 @@ function AppContent() {
   usePresentationTour(isDesktop);
 
   useEffect(() => {
+    void trackDataTradeEvent("module_opened", {
+      surface: "sislope",
+      initialViewMode: viewMode,
+    });
+    void trackDataTradeEvent("session_started", {
+      surface: "sislope",
+      initialViewMode: viewMode,
+    });
+  }, []);
+
+  useEffect(() => {
     if (selectedNodeId && !filteredNodeIds.has(selectedNodeId)) {
       selectNode(null, "system");
     }
@@ -198,6 +211,12 @@ function AppContent() {
 
     if (!showLabels && viewMode !== "density") {
       toggleLabels();
+      void trackDataTradeEvent("map_layer_toggled", {
+        layer: "labels",
+        visible: true,
+        source: "department_focus",
+        viewMode,
+      });
     }
 
     selectNode(null, "system");
@@ -370,6 +389,42 @@ function AppContent() {
     });
   }, [getCameraPadding, isMapExpanded, requestCameraCommand, toggleMapExpanded]);
 
+  const trackLayerToggle = useCallback(
+    (layer: string, visible: boolean, metadata: Record<string, unknown> = {}) => {
+      void trackDataTradeEvent("map_layer_toggled", {
+        layer,
+        visible,
+        viewMode,
+        ...metadata,
+      });
+    },
+    [viewMode],
+  );
+
+  const handleToggleLabels = useCallback(() => {
+    const nextVisible = !showLabels;
+    toggleLabels();
+    trackLayerToggle("labels", nextVisible);
+  }, [showLabels, toggleLabels, trackLayerToggle]);
+
+  const handleToggleFlows = useCallback(() => {
+    const nextVisible = !showFlows;
+    toggleFlows();
+    trackLayerToggle("flows", nextVisible);
+  }, [showFlows, toggleFlows, trackLayerToggle]);
+
+  const handleToggleCorridors = useCallback(() => {
+    const nextVisible = !showCorridors;
+    toggleCorridors();
+    trackLayerToggle("corridors", nextVisible);
+  }, [showCorridors, toggleCorridors, trackLayerToggle]);
+
+  const handleToggleFleetHeatmap = useCallback(() => {
+    const nextVisible = !showFleetHeatmap;
+    toggleFleetHeatmap();
+    trackLayerToggle("fleet_heatmap", nextVisible);
+  }, [showFleetHeatmap, toggleFleetHeatmap, trackLayerToggle]);
+
   return (
     <div ref={rootRef} data-theme-depth={themeDepth} className="app-shell flex min-h-screen flex-col pb-5">
       {isGuest ? (
@@ -405,10 +460,10 @@ function AppContent() {
         presentation={presentation}
         onViewModeChange={setViewMode}
         onToggleThemeDepth={() => setThemeDepth(themeDepth === "light" ? "dark" : "light")}
-        onToggleLabels={toggleLabels}
-        onToggleFlows={toggleFlows}
-        onToggleCorridors={toggleCorridors}
-        onToggleFleetHeatmap={toggleFleetHeatmap}
+        onToggleLabels={handleToggleLabels}
+        onToggleFlows={handleToggleFlows}
+        onToggleCorridors={handleToggleCorridors}
+        onToggleFleetHeatmap={handleToggleFleetHeatmap}
         onResetCamera={resetCamera}
         onExport={exportCurrentView}
         onStartPresentation={startPresentation}
@@ -416,6 +471,7 @@ function AppContent() {
         onResumePresentation={resumePresentation}
         onStopPresentation={stopPresentation}
       />
+      <DataTradeAuthPanel />
 
       <main
         className={`relative z-10 grid flex-1 gap-4 px-4 pb-4 lg:min-h-[calc(100vh-11rem)] ${
