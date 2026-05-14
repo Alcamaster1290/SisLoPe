@@ -36,6 +36,7 @@ describe("MapLegend", () => {
         availableCategories={["port_sea"]}
         categoryTotals={baseTotals}
         activeCategories={[]}
+        allCategoriesDeselected={false}
         onToggleCategory={() => undefined}
         onSelectAllCategories={() => undefined}
       />,
@@ -58,6 +59,7 @@ describe("MapLegend", () => {
         availableCategories={["port_sea"]}
         categoryTotals={baseTotals}
         activeCategories={["port_sea"]}
+        allCategoriesDeselected={false}
         onToggleCategory={() => undefined}
         onSelectAllCategories={() => undefined}
       />,
@@ -66,7 +68,7 @@ describe("MapLegend", () => {
     expect(screen.queryByRole("button", { name: /limpiar/i })).toBeNull();
   });
 
-  it("el boton Seleccionar todo dispara onSelectAllCategories solo cuando hay filtro activo", () => {
+  it("muestra 'Deseleccionar todo' cuando todos estan visibles y 'Seleccionar todo' cuando hay filtro", () => {
     const onSelectAll = vi.fn();
     const { rerender } = render(
       <MapLegend
@@ -74,15 +76,16 @@ describe("MapLegend", () => {
         availableCategories={["port_sea", "airport"]}
         categoryTotals={{ ...baseTotals, airport: 2 }}
         activeCategories={[]}
+        allCategoriesDeselected={false}
         onToggleCategory={() => undefined}
         onSelectAllCategories={onSelectAll}
       />,
     );
 
-    const button = screen.getByRole("button", { name: /seleccionar todo/i });
-    expect(button).toBeDisabled();
-    fireEvent.click(button);
-    expect(onSelectAll).not.toHaveBeenCalled();
+    const deselButton = screen.getByRole("button", { name: /deseleccionar todo/i });
+    expect(deselButton).not.toBeDisabled();
+    fireEvent.click(deselButton);
+    expect(onSelectAll).toHaveBeenCalledTimes(1);
 
     rerender(
       <MapLegend
@@ -90,14 +93,15 @@ describe("MapLegend", () => {
         availableCategories={["port_sea", "airport"]}
         categoryTotals={{ ...baseTotals, airport: 2 }}
         activeCategories={["port_sea"]}
+        allCategoriesDeselected={false}
         onToggleCategory={() => undefined}
         onSelectAllCategories={onSelectAll}
       />,
     );
 
-    const enabledButton = screen.getByRole("button", { name: /seleccionar todo/i });
-    expect(enabledButton).not.toBeDisabled();
-    fireEvent.click(enabledButton);
-    expect(onSelectAll).toHaveBeenCalledTimes(1);
+    const selButton = screen.getByRole("button", { name: /seleccionar todo/i });
+    expect(selButton).not.toBeDisabled();
+    fireEvent.click(selButton);
+    expect(onSelectAll).toHaveBeenCalledTimes(2);
   });
 });

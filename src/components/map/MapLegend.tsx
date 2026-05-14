@@ -7,6 +7,7 @@ interface MapLegendProps {
   availableCategories: NodeCategory[];
   categoryTotals: Record<NodeCategory, number>;
   activeCategories: NodeCategory[];
+  allCategoriesDeselected: boolean;
   onToggleCategory: (category: NodeCategory) => void;
   onSelectAllCategories: () => void;
 }
@@ -16,11 +17,13 @@ export function MapLegend({
   availableCategories,
   categoryTotals,
   activeCategories,
+  allCategoriesDeselected,
   onToggleCategory,
   onSelectAllCategories,
 }: MapLegendProps) {
   const [minimized, setMinimized] = useState(false);
-  const hasCategoryFilter = activeCategories.length > 0;
+  const hasCategoryFilter = activeCategories.length > 0 || allCategoriesDeselected;
+  const allVisible = !hasCategoryFilter;
   const visibleCounts = useMemo(
     () =>
       visibleNodes.reduce<Record<NodeCategory, number>>(
@@ -78,10 +81,9 @@ export function MapLegend({
           <button
             type="button"
             onClick={onSelectAllCategories}
-            disabled={!hasCategoryFilter}
-            className="control-pill mt-2.5 w-full rounded-xl px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-strong)] disabled:cursor-not-allowed disabled:opacity-55"
+            className="control-pill mt-2.5 w-full rounded-xl px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-strong)]"
           >
-            Seleccionar todo
+            {allVisible ? "Deseleccionar todo" : "Seleccionar todo"}
           </button>
           <div className="mt-1.5 space-y-1.5">
             {categoriesToRender.map((category) => {

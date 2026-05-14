@@ -330,7 +330,7 @@ export function getFlowMidpoint(feature: Feature<LineString>): Position {
 
 export function getNodeFocusCamera(node: LogisticsNode, mode: MapViewMode): Partial<MapCameraState> {
   const baseZoom =
-    node.strategicLevel === "national" ? 7.1 : node.strategicLevel === "regional" ? 6.6 : 6.25;
+    node.strategicLevel === "national" ? 9.5 : node.strategicLevel === "regional" ? 10.0 : 10.5;
   const modePreset = getModeCameraPreset(mode);
   const macroBearing =
     node.macrozone === "south" || node.macrozone === "border"
