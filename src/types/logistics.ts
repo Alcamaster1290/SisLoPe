@@ -78,6 +78,7 @@ export interface LogisticsFlow {
 
 export interface NodeFilters {
   categories: NodeCategory[];
+  allCategoriesDeselected: boolean;
   macrozones: Macrozone[];
   strategicLevels: StrategicLevel[];
   terrains: Terrain[];

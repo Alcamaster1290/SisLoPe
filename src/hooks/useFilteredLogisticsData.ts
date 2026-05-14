@@ -13,6 +13,7 @@ export function useFilteredLogisticsData() {
 
   const filteredNodes = useMemo(() => {
     return nodes.filter((node) => {
+      if (filters.allCategoriesDeselected && filters.categories.length === 0) return false;
       if (filters.categories.length > 0 && !filters.categories.includes(node.category)) return false;
       if (filters.macrozones.length > 0 && !filters.macrozones.includes(node.macrozone)) return false;
       if (
@@ -36,6 +37,7 @@ export function useFilteredLogisticsData() {
     });
   }, [
     deferredSearch,
+    filters.allCategoriesDeselected,
     filters.categories,
     filters.macrozones,
     filters.strategicLevels,

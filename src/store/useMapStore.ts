@@ -44,6 +44,7 @@ interface MapStoreState {
   toggleCategory: (category: NodeCategory) => void;
   setCategoryFilters: (categories: NodeCategory[]) => void;
   clearCategoryFilters: () => void;
+  deselectAllCategories: () => void;
   toggleFilterValue: (
     key: "macrozones" | "strategicLevels" | "terrains",
     value: Macrozone | StrategicLevel | Terrain,
@@ -75,6 +76,7 @@ interface MapStoreState {
 
 const initialFilters: NodeFilters = {
   categories: [],
+  allCategoriesDeselected: false,
   macrozones: [],
   strategicLevels: [],
   terrains: [],
@@ -186,6 +188,7 @@ export const useMapStore = create<MapStoreState>((set) => ({
         filters: {
           ...state.filters,
           categories,
+          allCategoriesDeselected: false,
         },
         ...pausePresentationOnUserAction(state),
       };
@@ -195,6 +198,7 @@ export const useMapStore = create<MapStoreState>((set) => ({
       filters: {
         ...state.filters,
         categories,
+        allCategoriesDeselected: false,
       },
       ...pausePresentationOnUserAction(state),
     })),
@@ -203,6 +207,16 @@ export const useMapStore = create<MapStoreState>((set) => ({
       filters: {
         ...state.filters,
         categories: [],
+        allCategoriesDeselected: false,
+      },
+      ...pausePresentationOnUserAction(state),
+    })),
+  deselectAllCategories: () =>
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        categories: [],
+        allCategoriesDeselected: true,
       },
       ...pausePresentationOnUserAction(state),
     })),

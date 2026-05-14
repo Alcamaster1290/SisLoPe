@@ -80,6 +80,7 @@ function AppContent() {
   const isMapExpanded = useMapStore((state) => state.isMapExpanded);
   const selectedNodeId = useMapStore((state) => state.selectedNodeId);
   const activeCategories = useMapStore((state) => state.filters.categories);
+  const allCategoriesDeselected = useMapStore((state) => state.filters.allCategoriesDeselected);
   const cameraBeforeNodeFocus = useMapStore((state) => state.cameraBeforeNodeFocus);
   const exportPending = useMapStore((state) => state.exportPending);
   const presentation = useMapStore((state) => state.presentation);
@@ -92,6 +93,7 @@ function AppContent() {
   const toggleMapExpanded = useMapStore((state) => state.toggleMapExpanded);
   const setCategoryFilters = useMapStore((state) => state.setCategoryFilters);
   const clearCategoryFilters = useMapStore((state) => state.clearCategoryFilters);
+  const deselectAllCategories = useMapStore((state) => state.deselectAllCategories);
   const resetFilters = useMapStore((state) => state.resetFilters);
   const selectNode = useMapStore((state) => state.selectNode);
   const setDepartment = useMapStore((state) => state.setDepartment);
@@ -527,8 +529,13 @@ function AppContent() {
                   availableCategories={availableCategories}
                   categoryTotals={categoryTotals}
                   activeCategories={activeCategories}
+                  allCategoriesDeselected={allCategoriesDeselected}
                   onToggleCategory={handleLegendToggleCategory}
-                  onSelectAllCategories={clearCategoryFilters}
+                  onSelectAllCategories={
+                    activeCategories.length === 0 && !allCategoriesDeselected
+                      ? deselectAllCategories
+                      : clearCategoryFilters
+                  }
                 />
               </div>
             </div>
